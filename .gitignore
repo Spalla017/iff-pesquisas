@@ -1,0 +1,30 @@
+# Dependências
+node_modules/
+
+# Build
+dist/
+.output/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+*.suo
+*.sw?
+
+# Logs
+*.log
+
+# PHP / Laravel (caso backend seja adicionado)
+vendor/
+storage/*.key
+.env
+public/hot
+public/storage
