@@ -1,35 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :root {
-  --bg: #f6f2e9;
-  --bg-strong: #efe3cf;
+  --bg: #f6f8fb;
+  --bg-strong: #e8edf5;
   --surface: #ffffff;
-  --surface-2: #fff8ec;
-  --surface-hover: #faf5ee;
+  --surface-2: #f9fbfd;
+  --surface-hover: #f1f5f9;
   --text: #0b1d3a;
   --text-secondary: #374151;
   --muted: #5a6477;
-  --primary: #1c2f63;
-  --primary-2: #0f5a6b;
-  --primary-light: rgba(28, 47, 99, 0.08);
-  --accent: #c9a227;
-  --accent-2: #7a2f2f;
-  --accent-light: rgba(201, 162, 39, 0.12);
+  --primary: #124734;
+  --primary-2: #0f766e;
+  --primary-light: rgba(18, 71, 52, 0.08);
+  --accent: #b7791f;
+  --accent-2: #8a3d18;
+  --accent-light: rgba(183, 121, 31, 0.12);
   --success: #059669;
   --success-light: rgba(5, 150, 105, 0.1);
   --danger: #dc2626;
   --danger-light: rgba(220, 38, 38, 0.08);
   --warning: #d97706;
   --warning-light: rgba(217, 119, 6, 0.08);
-  --border: rgba(11, 29, 58, 0.10);
-  --border-strong: rgba(11, 29, 58, 0.18);
-  --ring: rgba(28, 47, 99, 0.28);
+  --border: rgba(15, 23, 42, 0.10);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --ring: rgba(15, 118, 110, 0.26);
 
   --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.05);
   --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.06);
   --shadow-md: 0 12px 32px rgba(15, 23, 42, 0.10);
   --shadow-lg: 0 24px 56px rgba(15, 23, 42, 0.14);
-  --shadow-glow: 0 0 48px rgba(28, 47, 99, 0.15);
+  --shadow-glow: 0 0 48px rgba(15, 118, 110, 0.12);
 
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -39,10 +39,10 @@
   --spacing-2xl: 4rem;
   --spacing-3xl: 6rem;
 
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
   --radius-pill: 999px;
 
   --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
@@ -72,11 +72,7 @@ body {
 }
 
 body {
-  background:
-    radial-gradient(1200px 600px at 5% -8%, rgba(28, 47, 99, 0.16), transparent 55%),
-    radial-gradient(1000px 500px at 98% 2%, rgba(201, 162, 39, 0.14), transparent 50%),
-    radial-gradient(800px 400px at 50% 100%, rgba(15, 90, 107, 0.06), transparent 50%),
-    var(--bg);
+  background: linear-gradient(180deg, #f9fbfd 0%, var(--bg) 42%, #eef3f7 100%);
   color: var(--text);
   line-height: 1.65;
   position: relative;
@@ -87,10 +83,10 @@ body::before {
   position: fixed;
   inset: 0;
   background-image:
-    repeating-linear-gradient(90deg, rgba(11, 27, 51, 0.03), rgba(11, 27, 51, 0.03) 1px, transparent 1px, transparent 40px),
-    repeating-linear-gradient(0deg, rgba(11, 27, 51, 0.02), rgba(11, 27, 51, 0.02) 1px, transparent 1px, transparent 28px);
+    repeating-linear-gradient(90deg, rgba(15, 23, 42, 0.025), rgba(15, 23, 42, 0.025) 1px, transparent 1px, transparent 48px),
+    repeating-linear-gradient(0deg, rgba(15, 23, 42, 0.018), rgba(15, 23, 42, 0.018) 1px, transparent 1px, transparent 36px);
   pointer-events: none;
-  opacity: 0.25;
+  opacity: 0.35;
   z-index: -1;
 }
 
@@ -136,7 +132,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 700;
 }
 
@@ -204,16 +200,16 @@ p {
 
 .academic-card {
   background: linear-gradient(180deg, #fff 0%, var(--surface-2) 100%);
-  border: 1px solid rgba(30, 58, 138, 0.12);
+  border: 1px solid rgba(15, 23, 42, 0.10);
   box-shadow: var(--shadow-sm);
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid var(--border);
   box-shadow: var(--shadow-md);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
 
 /* ===== Badges / Pills / Chips ===== */
@@ -329,7 +325,7 @@ p {
   justify-content: center;
   gap: 0.5rem;
   padding: 0.7rem 1.5rem;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-md);
   border: 1px solid transparent;
   font-weight: 700;
   font-size: 0.92rem;
@@ -421,7 +417,7 @@ p {
   width: 36px;
   height: 36px;
   padding: 0;
-  border-radius: 50%;
+  border-radius: var(--radius-md);
 }
 
 /* ===== Text Utilities ===== */

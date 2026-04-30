@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 
 const api: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
-  timeout: 30000,
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
 });
 
 // Interceptor para adicionar token ao header

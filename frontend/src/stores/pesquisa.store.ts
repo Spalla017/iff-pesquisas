@@ -68,7 +68,9 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
   // Buscar pesquisas (simulado com delay)
   const buscarPesquisas = async (filtrosNovos?: FiltrosPesquisa) => {
     if (filtrosNovos) {
-      filtros.value = { ...filtros.value, ...filtrosNovos };
+      filtros.value = {
+        ...filtrosNovos,
+      };
       paginacao.value.pagina = 1;
     }
 
@@ -90,6 +92,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
   const buscarPorId = async (id: string) => {
     carregando.value = true;
     erro.value = null;
+    pesquisaSelecionada.value = null;
 
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -143,6 +146,9 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
       todasPesquisas.value = todasPesquisas.value.filter(p => p.id !== id);
+      if (pesquisaSelecionada.value?.id === id) {
+        pesquisaSelecionada.value = null;
+      }
       return true;
     } catch {
       return false;
@@ -157,7 +163,8 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
 
   // Mudar pagina
   const irParaPagina = (pagina: number) => {
-    paginacao.value.pagina = pagina;
+    const ultimaPagina = Math.max(1, totalPaginas.value);
+    paginacao.value.pagina = Math.min(Math.max(1, pagina), ultimaPagina);
   };
 
   return {

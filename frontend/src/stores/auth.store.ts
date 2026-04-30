@@ -29,6 +29,16 @@ export const useAuthStore = defineStore('auth', () => {
     erro.value = null;
 
     try {
+      if (usarLoginDev(payload)) {
+        token.value = 'dev-token';
+        usuario.value = criarUsuarioDev(payload.email);
+
+        localStorage.setItem('token', token.value);
+        localStorage.setItem('usuario', JSON.stringify(usuario.value));
+
+        return true;
+      }
+
       const response = await api.post('/auth/login', payload);
       token.value = response.data.token;
       usuario.value = response.data.usuario;
@@ -47,6 +57,29 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       carregando.value = false;
     }
+  };
+
+  const usarLoginDev = (payload: LoginPayload) =>
+    import.meta.env.DEV &&
+    import.meta.env.VITE_USE_API_AUTH !== 'true' &&
+    payload.email.trim().toLowerCase().endsWith('@iff.edu.br') &&
+    payload.senha.trim().length >= 4;
+
+  const criarUsuarioDev = (email: string): Usuario => ({
+    id: 'dev-user',
+    nome: extrairNomeDev(email),
+    email,
+    matricula: '0000000',
+    perfil: 'aluno',
+  });
+
+  const extrairNomeDev = (email: string) => {
+    const [usuarioEmail] = email.split('@');
+    return usuarioEmail
+      .split(/[._-]/)
+      .filter(Boolean)
+      .map(parte => parte.charAt(0).toUpperCase() + parte.slice(1))
+      .join(' ') || 'Aluno IFF';
   };
 
   // Logout

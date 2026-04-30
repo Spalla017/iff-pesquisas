@@ -65,6 +65,14 @@
 
     <!-- Results Grid -->
     <section v-else class="feed-results reveal reveal-delay-2">
+      <div class="results-toolbar">
+        <div>
+          <span class="toolbar-kicker">Resultados</span>
+          <strong>{{ pesquisasFiltradas.length }} pesquisa{{ pesquisasFiltradas.length !== 1 ? 's' : '' }} encontrada{{ pesquisasFiltradas.length !== 1 ? 's' : '' }}</strong>
+        </div>
+        <span class="muted text-sm">Página {{ paginaAtual }} de {{ totalPaginas }}</span>
+      </div>
+
       <div class="results-grid">
         <PesquisaCard
           v-for="pesquisa in pesquisasPaginadas"
@@ -113,12 +121,14 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
 import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
 import SearchFilters from '@/components/common/SearchFilters.vue';
 import PesquisaCard from '@/components/common/PesquisaCard.vue';
 
 const pesquisaStore = usePesquisaStore();
+const route = useRoute();
 
 // Filter state
 const termoBusca = ref('');
@@ -190,7 +200,16 @@ const mudarPagina = (pagina: number) => {
 };
 
 onMounted(() => {
-  pesquisaStore.buscarPesquisas();
+  const queryBusca = typeof route.query.q === 'string' ? route.query.q : '';
+  const queryArea = typeof route.query.area === 'string' ? route.query.area : '';
+
+  termoBusca.value = queryBusca;
+  areaSelecionada.value = queryArea;
+
+  pesquisaStore.buscarPesquisas({
+    termo: queryBusca || undefined,
+    area: queryArea || undefined,
+  });
 });
 </script>
 
@@ -271,6 +290,35 @@ onMounted(() => {
   gap: 1.25rem;
 }
 
+.results-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.results-toolbar > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.results-toolbar strong {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.toolbar-kicker {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* Pagination */
 .pagination {
   display: flex;
@@ -335,6 +383,11 @@ onMounted(() => {
 
   .stat {
     flex: 1;
+  }
+
+  .results-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

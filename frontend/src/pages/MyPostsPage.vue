@@ -3,36 +3,40 @@
     <!-- Header -->
     <section class="page-header reveal">
       <div class="header-left">
-        <div class="header-badges">
-          <svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
-            <path d="M32 4l22 8v16c0 14-9 26-22 32C19 54 10 42 10 28V12l22-8z" fill="currentColor" opacity="0.15"/>
-            <path d="M32 8l18 7v13c0 12-7 22-18 27-11-5-18-15-18-27V15l18-7z" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M22 30h20M32 20v28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span class="badge">Área pessoal</span>
-          <span class="ribbon">Minha produção</span>
+        <div class="workspace-label">
+          <span class="workspace-mark" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 4h9l5 5v11H5z"/>
+              <path d="M14 4v5h5"/>
+              <path d="M8 13h8"/>
+              <path d="M8 17h5"/>
+            </svg>
+          </span>
+          <div>
+            <span>Área pessoal</span>
+            <strong>Gestão de publicações</strong>
+          </div>
         </div>
         <h1>Meus posts</h1>
-        <div class="ornament-line"></div>
         <p>Gerencie suas pesquisas publicadas, edite conteúdo e acompanhe o status.</p>
       </div>
-      <router-link to="/criar-post" class="btn btn-primary" id="btn-new-post">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        Nova pesquisa
-      </router-link>
+      <div class="header-panel">
+        <div class="header-metrics" v-if="posts.length > 0">
+          <div class="metric-item">
+            <strong>{{ posts.length }}</strong>
+            <span>publicações</span>
+          </div>
+          <div class="metric-item">
+            <strong>{{ areasPublicadas }}</strong>
+            <span>áreas</span>
+          </div>
+        </div>
+        <router-link to="/criar-post" class="btn btn-primary" id="btn-new-post">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Nova pesquisa
+        </router-link>
+      </div>
     </section>
-
-    <!-- Stats -->
-    <div class="stats-row reveal reveal-delay-1" v-if="posts.length > 0">
-      <div class="stat-chip">
-        <strong>{{ posts.length }}</strong>
-        <span>publicações</span>
-      </div>
-      <div class="stat-chip">
-        <strong>{{ areasPublicadas }}</strong>
-        <span>áreas</span>
-      </div>
-    </div>
 
     <!-- Loading -->
     <div v-if="carregando" class="loading-container">
@@ -151,38 +155,126 @@ const confirmarDelete = async () => {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  max-width: 900px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
 /* Header */
 .page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 1.5rem;
-  flex-wrap: wrap;
+  padding: 1.5rem;
+  background:
+    linear-gradient(135deg, rgba(18, 71, 52, 0.08), rgba(15, 118, 110, 0.04)),
+    var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-left {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
-.header-badges {
-  display: flex;
+.workspace-label {
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
+  width: fit-content;
+  padding: 0.45rem 0.7rem 0.45rem 0.45rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.workspace-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: var(--primary);
+  background: var(--primary-light);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.workspace-label div {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.workspace-label span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.workspace-label strong {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 800;
 }
 
 .page-header h1 {
   margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
 }
 
 .page-header p {
   max-width: 420px;
+  margin: 0;
+}
+
+.header-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.8rem;
+  min-width: 220px;
+}
+
+.header-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.metric-item {
+  display: grid;
+  place-items: center;
+  min-height: 74px;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.metric-item strong {
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.metric-item span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.header-panel .btn {
+  width: 100%;
 }
 
 /* Stats */
@@ -324,6 +416,16 @@ const confirmarDelete = async () => {
 }
 
 @media (max-width: 768px) {
+  .page-header {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
+
+  .header-panel {
+    width: 100%;
+    min-width: 0;
+  }
+
   .post-item {
     flex-direction: column;
   }
@@ -335,10 +437,6 @@ const confirmarDelete = async () => {
 
   .post-actions .btn {
     flex: 1;
-  }
-
-  .page-header {
-    flex-direction: column;
   }
 }
 </style>

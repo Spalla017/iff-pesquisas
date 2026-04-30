@@ -273,7 +273,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
 import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
@@ -311,7 +311,11 @@ const formValido = computed(() =>
 // Keywords
 const adicionarPalavraChave = () => {
   const kw = novaPalavraChave.value.trim();
-  if (kw && form.value.palavrasChave.length < 5 && !form.value.palavrasChave.includes(kw)) {
+  const jaExiste = form.value.palavrasChave.some(
+    palavra => palavra.toLocaleLowerCase('pt-BR') === kw.toLocaleLowerCase('pt-BR'),
+  );
+
+  if (kw && form.value.palavrasChave.length < 5 && !jaExiste) {
     form.value.palavrasChave.push(kw);
     novaPalavraChave.value = '';
   }
@@ -325,22 +329,31 @@ const removerPalavraChave = (idx: number) => {
 const handlePdfSelect = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files?.[0]) {
-    const file = input.files[0];
-    if (file.size > 50 * 1024 * 1024) {
-      erroPublicacao.value = 'O arquivo PDF deve ter no máximo 50MB.';
-      return;
-    }
-    form.value.pdf = file;
-    erroPublicacao.value = '';
+    setPdf(input.files[0]);
   }
 };
 
 const handlePdfDrop = (event: DragEvent) => {
   isDraggingPdf.value = false;
   const file = event.dataTransfer?.files[0];
-  if (file && file.type === 'application/pdf') {
-    form.value.pdf = file;
+  if (file) {
+    setPdf(file);
   }
+};
+
+const setPdf = (file: File) => {
+  if (file.type !== 'application/pdf') {
+    erroPublicacao.value = 'Selecione um arquivo no formato PDF.';
+    return;
+  }
+
+  if (file.size > 50 * 1024 * 1024) {
+    erroPublicacao.value = 'O arquivo PDF deve ter no máximo 50MB.';
+    return;
+  }
+
+  form.value.pdf = file;
+  erroPublicacao.value = '';
 };
 
 const handleImageSelect = (event: Event) => {
@@ -359,8 +372,18 @@ const handleImageDrop = (event: DragEvent) => {
 };
 
 const setImagem = (file: File) => {
+  if (!file.type.startsWith('image/')) {
+    erroPublicacao.value = 'Selecione uma imagem válida.';
+    return;
+  }
+
+  if (imagemPreviewUrl.value) {
+    URL.revokeObjectURL(imagemPreviewUrl.value);
+  }
+
   form.value.imagem = file;
   imagemPreviewUrl.value = URL.createObjectURL(file);
+  erroPublicacao.value = '';
 };
 
 const removerImagem = () => {
@@ -421,6 +444,12 @@ const handleSubmit = async () => {
     enviando.value = false;
   }
 };
+
+onBeforeUnmount(() => {
+  if (imagemPreviewUrl.value) {
+    URL.revokeObjectURL(imagemPreviewUrl.value);
+  }
+});
 </script>
 
 <style scoped>

@@ -4,13 +4,28 @@
     <section class="login-panel reveal">
       <div class="panel-content">
         <div class="panel-badges">
-          <svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
-            <path d="M32 4l22 8v16c0 14-9 26-22 32C19 54 10 42 10 28V12l22-8z" fill="currentColor" opacity="0.15"/>
-            <path d="M32 8l18 7v13c0 12-7 22-18 27-11-5-18-15-18-27V15l18-7z" fill="none" stroke="currentColor" stroke-width="2"/>
-            <path d="M22 30h20M32 20v28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <span class="seal">IFF</span>
-          <span class="badge">Acesso institucional</span>
+          <div class="institution-mark" aria-label="Instituto Federal Fluminense">
+            <div class="if-symbol" aria-hidden="true">
+              <span class="if-dot"></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="institution-text">
+              <strong>Instituto Federal</strong>
+              <span>Fluminense</span>
+            </div>
+          </div>
+          <span class="access-chip">
+            <span class="access-chip-dot"></span>
+            Acesso institucional
+          </span>
         </div>
 
         <h1>Seu projeto merece<br/>visibilidade</h1>
@@ -182,8 +197,170 @@ const handleLogin = async () => {
 .panel-badges {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.institution-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-height: 74px;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  backdrop-filter: blur(10px);
+}
+
+.if-symbol {
+  display: grid;
+  grid-template-columns: repeat(3, 9px);
+  grid-template-rows: repeat(4, 9px);
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.if-symbol span {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: #2F9E41;
+}
+
+.if-symbol .if-dot {
+  grid-column: 1;
+  grid-row: 1;
+  border-radius: 50%;
+  background: #CD191E;
+}
+
+.if-symbol span:nth-child(2) {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.if-symbol span:nth-child(3) {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.if-symbol span:nth-child(4) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.if-symbol span:nth-child(5) {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.if-symbol span:nth-child(6) {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.if-symbol span:nth-child(7) {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.if-symbol span:nth-child(8) {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.if-symbol span:nth-child(9) {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.if-symbol span:nth-child(10) {
+  grid-column: 2;
+  grid-row: 4;
+}
+
+.institution-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.institution-text strong {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.institution-text span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.access-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 38px;
+  padding: 0.5rem 0.85rem;
+  background: rgba(18, 71, 52, 0.08);
+  border: 1px solid rgba(18, 71, 52, 0.12);
+  border-radius: var(--radius-md);
+  color: var(--primary);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.access-chip-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-2);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  flex-shrink: 0;
+  animation: access-dot-pulse 1.6s ease-in-out infinite;
+}
+
+.access-chip-dot::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgba(15, 118, 110, 0.36);
+  border-radius: 50%;
+  animation: access-sonar 1.8s ease-out infinite;
+}
+
+@keyframes access-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  }
+
+  50% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.18);
+  }
+}
+
+@keyframes access-sonar {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.65);
+  }
+
+  80%,
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
 }
 
 .login-panel h1 {

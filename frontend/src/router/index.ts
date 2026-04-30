@@ -57,18 +57,20 @@ const router = createRouter({
 });
 
 // Guard de autenticacao
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   const authStore = useAuthStore();
   const requerAuth = to.meta.requiresAuth;
   const requerGuest = to.meta.requiresGuest;
 
   if (requerAuth && !authStore.isAutenticado) {
-    next('/login');
-  } else if (requerGuest && authStore.isAutenticado) {
-    next('/feed');
-  } else {
-    next();
+    return '/login';
   }
+
+  if (requerGuest && authStore.isAutenticado) {
+    return '/feed';
+  }
+
+  return true;
 });
 
 export default router;
