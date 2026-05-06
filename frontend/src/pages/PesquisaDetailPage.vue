@@ -34,7 +34,7 @@
         </div>
       </div>
       <div class="hero-actions">
-        <a v-if="pesquisa.pdfUrl" :href="pesquisa.pdfUrl" class="btn btn-primary" target="_blank" id="btn-download-pdf">
+        <a v-if="pdfDisponivel" :href="pesquisa.pdfUrl" class="btn btn-primary" target="_blank" id="btn-download-pdf">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
@@ -46,6 +46,15 @@
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
           PDF indisponível
         </span>
+        <button type="button" class="btn btn-outline" @click="compartilharPesquisa" id="btn-share-research">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <circle cx="18" cy="5" r="3"/>
+            <circle cx="6" cy="12" r="3"/>
+            <circle cx="18" cy="19" r="3"/>
+            <path d="M8.59 13.51l6.83 3.98M15.41 6.51L8.59 10.49"/>
+          </svg>
+          Compartilhar
+        </button>
       </div>
     </section>
 
@@ -71,7 +80,7 @@
 
         <!-- Imagem -->
         <div v-if="pesquisa.imagemUrl" class="image-section">
-          <img :src="pesquisa.imagemUrl" :alt="pesquisa.titulo" class="research-image" />
+          <img :src="pesquisa.imagemUrl" :alt="pesquisa.titulo" class="research-image" loading="lazy" />
         </div>
       </article>
 
@@ -95,8 +104,8 @@
             </div>
             <div class="info-row">
               <span class="info-label">PDF</span>
-              <span class="info-value" :class="pesquisa.pdfUrl ? 'text-success' : 'text-muted'">
-                {{ pesquisa.pdfUrl ? 'Disponível' : 'Não disponível' }}
+              <span class="info-value" :class="pdfDisponivel ? 'text-success' : 'text-muted'">
+                {{ pdfDisponivel ? 'Disponível' : 'Não disponível' }}
               </span>
             </div>
           </div>
@@ -133,19 +142,24 @@
 
 <script setup lang="ts">
 import { usePesquisaStore } from '@/stores/pesquisa.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useToastStore } from '@/stores/toast.store';
 import { useRoute } from 'vue-router';
 import { computed, onMounted } from 'vue';
 
 const route = useRoute();
 const pesquisaStore = usePesquisaStore();
+const authStore = useAuthStore();
+const toastStore = useToastStore();
 
 const pesquisa = computed(() => pesquisaStore.pesquisaSelecionada);
 const carregando = computed(() => pesquisaStore.carregando);
 const erro = computed(() => pesquisaStore.erro);
+const pdfDisponivel = computed(() => Boolean(pesquisa.value?.pdfUrl && pesquisa.value.pdfUrl !== '#'));
 
 onMounted(() => {
   const id = route.params.id as string;
-  pesquisaStore.buscarPorId(id);
+  pesquisaStore.buscarPorId(id, { incluirRascunhos: authStore.isAutenticado });
 });
 
 const formatarData = (data: Date) => {
@@ -154,6 +168,32 @@ const formatarData = (data: Date) => {
     month: 'long',
     year: 'numeric',
   });
+};
+
+const compartilharPesquisa = async () => {
+  if (!pesquisa.value) return;
+
+  const url = window.location.href;
+  const titulo = pesquisa.value.titulo;
+
+  try {
+    if (navigator.share) {
+      await navigator.share({
+        title: titulo,
+        text: 'Pesquisa publicada no IFF Pesquisas',
+        url,
+      });
+    } else {
+      await navigator.clipboard.writeText(url);
+      toastStore.notificar('Link da pesquisa copiado.', 'success');
+    }
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return;
+    }
+
+    toastStore.notificar('Não foi possível compartilhar agora.', 'danger');
+  }
 };
 </script>
 

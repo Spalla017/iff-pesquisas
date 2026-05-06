@@ -1,11 +1,15 @@
 <template>
   <article class="pesquisa-card card card-interactive" :id="`pesquisa-card-${pesquisa.id}`">
+    <div v-if="pesquisa.imagemUrl" class="card-media">
+      <img :src="pesquisa.imagemUrl" :alt="pesquisa.titulo" loading="lazy" />
+    </div>
+
     <div class="card-header">
       <div class="card-tags">
         <span class="pill pill-area">{{ pesquisa.area }}</span>
         <span class="pill">{{ formatarData(pesquisa.dataPublicacao) }}</span>
       </div>
-      <div v-if="pesquisa.pdfUrl" class="card-pdf-badge" title="PDF disponível">
+      <div v-if="temPdfDisponivel(pesquisa.pdfUrl)" class="card-pdf-badge" title="PDF disponível">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
           <polyline points="14,2 14,8 20,8"/>
@@ -58,6 +62,8 @@ const formatarData = (data: Date) => {
     year: 'numeric',
   });
 };
+
+const temPdfDisponivel = (pdfUrl?: string) => Boolean(pdfUrl && pdfUrl !== '#');
 </script>
 
 <style scoped>
@@ -77,6 +83,21 @@ const formatarData = (data: Date) => {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
   border-color: rgba(28, 47, 99, 0.18);
+}
+
+.card-media {
+  height: 168px;
+  margin: -1.5rem -1.5rem 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+  background: var(--bg-strong);
+}
+
+.card-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .card-header {

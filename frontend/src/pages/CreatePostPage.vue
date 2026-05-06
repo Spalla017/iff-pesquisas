@@ -6,18 +6,18 @@
         <div class="header-badges">
           <span class="badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Nova publicação
+            {{ isEdicao ? 'Edição de publicação' : 'Nova publicação' }}
           </span>
         </div>
-        <h1>Publicar pesquisa</h1>
-        <p>Dê visibilidade ao seu trabalho acadêmico com um cadastro completo e organizado.</p>
+        <h1>{{ isEdicao ? 'Editar pesquisa' : 'Publicar pesquisa' }}</h1>
+        <p>{{ isEdicao ? 'Atualize as informações da sua publicação acadêmica.' : 'Dê visibilidade ao seu trabalho acadêmico com um cadastro completo e organizado.' }}</p>
       </div>
     </section>
 
     <!-- Success Alert -->
     <div v-if="publicadoComSucesso" class="alert alert-success scale-in">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-      Pesquisa publicada com sucesso! Redirecionando...
+      Pesquisa {{ isEdicao ? 'atualizada' : 'publicada' }} com sucesso! Redirecionando...
     </div>
 
     <!-- Error Alert -->
@@ -160,7 +160,7 @@
           <label class="form-label">Imagem de capa</label>
           <div
             class="upload-zone"
-            :class="{ 'upload-active': isDraggingImg, 'upload-filled': form.imagem }"
+            :class="{ 'upload-active': isDraggingImg, 'upload-filled': imagemPreviewUrl }"
             @dragover.prevent="isDraggingImg = true"
             @dragleave="isDraggingImg = false"
             @drop.prevent="handleImageDrop"
@@ -173,7 +173,7 @@
               class="upload-input"
               id="img-input"
             />
-            <div v-if="!form.imagem" class="upload-placeholder">
+            <div v-if="!imagemPreviewUrl" class="upload-placeholder">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="8.5" cy="8.5" r="1.5"/>
@@ -185,8 +185,8 @@
             <div v-else class="upload-preview">
               <img :src="imagemPreviewUrl" alt="Preview" class="img-preview" />
               <div class="upload-file-info">
-                <strong>{{ form.imagem.name }}</strong>
-                <span class="form-hint">{{ formatFileSize(form.imagem.size) }}</span>
+                <strong>{{ form.imagem?.name || 'Imagem atual da pesquisa' }}</strong>
+                <span class="form-hint">{{ form.imagem ? formatFileSize(form.imagem.size) : 'Pré-visualização atual' }}</span>
               </div>
               <button type="button" @click.stop="removerImagem" class="upload-remove" aria-label="Remover imagem">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
@@ -211,9 +211,9 @@
           <button type="submit" :disabled="enviando || !formValido" class="btn btn-primary btn-lg" id="btn-publish">
             <svg v-if="!enviando" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             <span v-if="enviando" class="btn-spinner"></span>
-            {{ enviando ? 'Publicando...' : 'Publicar pesquisa' }}
+            {{ textoBotaoSubmit }}
           </button>
-          <router-link to="/feed" class="btn btn-outline" id="btn-cancel-create">Cancelar</router-link>
+          <router-link :to="isEdicao ? '/meus-posts' : '/feed'" class="btn btn-outline" id="btn-cancel-create">Cancelar</router-link>
         </div>
       </form>
 
@@ -273,12 +273,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
 import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
+import { createPostSchema, extrairErroZod } from '@/schemas';
 
 const router = useRouter();
+const route = useRoute();
 const pesquisaStore = usePesquisaStore();
 
 const areas = AREAS_DISPONIVEIS;
@@ -290,6 +292,8 @@ const novaPalavraChave = ref('');
 const isDraggingPdf = ref(false);
 const isDraggingImg = ref(false);
 const imagemPreviewUrl = ref('');
+const imagemRemovida = ref(false);
+const snapshotInicial = ref('');
 
 const form = ref({
   titulo: '',
@@ -307,6 +311,37 @@ const formValido = computed(() =>
   form.value.area !== '' &&
   form.value.orientador.trim() !== ''
 );
+const serializarForm = () => JSON.stringify({
+  titulo: form.value.titulo,
+  resumo: form.value.resumo,
+  area: form.value.area,
+  orientador: form.value.orientador,
+  palavrasChave: form.value.palavrasChave,
+  imagemPreviewUrl: imagemPreviewUrl.value,
+  imagemRemovida: imagemRemovida.value,
+});
+const formAlterado = computed(() =>
+  serializarForm() !== snapshotInicial.value ||
+  form.value.pdf !== null ||
+  form.value.imagem !== null
+);
+const deveConfirmarSaida = () =>
+  formAlterado.value &&
+  !publicadoComSucesso.value &&
+  !enviando.value;
+
+const postId = computed(() => typeof route.params.id === 'string' ? route.params.id : '');
+const isEdicao = computed(() => route.name === 'EditPost' && !!postId.value);
+const pesquisaEmEdicao = computed(() =>
+  postId.value ? pesquisaStore.todasPesquisas.find(pesquisa => pesquisa.id === postId.value) : undefined
+);
+const textoBotaoSubmit = computed(() => {
+  if (enviando.value) {
+    return isEdicao.value ? 'Salvando...' : 'Publicando...';
+  }
+
+  return isEdicao.value ? 'Salvar alterações' : 'Publicar pesquisa';
+});
 
 // Keywords
 const adicionarPalavraChave = () => {
@@ -317,8 +352,9 @@ const adicionarPalavraChave = () => {
 
   if (kw && form.value.palavrasChave.length < 5 && !jaExiste) {
     form.value.palavrasChave.push(kw);
-    novaPalavraChave.value = '';
   }
+
+  novaPalavraChave.value = '';
 };
 
 const removerPalavraChave = (idx: number) => {
@@ -377,21 +413,23 @@ const setImagem = (file: File) => {
     return;
   }
 
-  if (imagemPreviewUrl.value) {
+  if (imagemPreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(imagemPreviewUrl.value);
   }
 
   form.value.imagem = file;
   imagemPreviewUrl.value = URL.createObjectURL(file);
+  imagemRemovida.value = false;
   erroPublicacao.value = '';
 };
 
 const removerImagem = () => {
-  if (imagemPreviewUrl.value) {
+  if (imagemPreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(imagemPreviewUrl.value);
   }
   form.value.imagem = null;
   imagemPreviewUrl.value = '';
+  imagemRemovida.value = true;
 };
 
 const formatFileSize = (bytes: number) => {
@@ -403,6 +441,19 @@ const formatFileSize = (bytes: number) => {
 // Submit
 const handleSubmit = async () => {
   if (!formValido.value) return;
+
+  const dadosValidados = createPostSchema.safeParse({
+    titulo: form.value.titulo.trim(),
+    resumo: form.value.resumo.trim(),
+    area: form.value.area,
+    orientador: form.value.orientador.trim(),
+    palavrasChave: form.value.palavrasChave,
+  });
+
+  if (!dadosValidados.success) {
+    erroPublicacao.value = extrairErroZod(dadosValidados) ?? 'Dados inválidos.';
+    return;
+  }
 
   enviando.value = true;
   erroPublicacao.value = '';
@@ -416,15 +467,18 @@ const handleSubmit = async () => {
   }, 200);
 
   try {
-    const sucesso = await pesquisaStore.criarPesquisa({
-      titulo: form.value.titulo,
-      resumo: form.value.resumo,
-      area: form.value.area,
-      orientador: form.value.orientador,
-      palavrasChave: form.value.palavrasChave,
+    const payload = {
+      ...dadosValidados.data,
       pdf: form.value.pdf,
       imagem: form.value.imagem,
-    });
+    };
+
+    const sucesso = isEdicao.value
+      ? await pesquisaStore.atualizarPesquisa(postId.value, {
+        ...payload,
+        removerImagem: imagemRemovida.value,
+      })
+      : await pesquisaStore.criarPesquisa(payload);
 
     clearInterval(progressInterval);
     progressoUpload.value = 100;
@@ -432,10 +486,12 @@ const handleSubmit = async () => {
     if (sucesso) {
       publicadoComSucesso.value = true;
       setTimeout(() => {
-        router.push('/feed');
+        router.push(isEdicao.value ? '/meus-posts' : '/feed');
       }, 1500);
     } else {
-      erroPublicacao.value = 'Erro ao publicar pesquisa. Tente novamente.';
+      erroPublicacao.value = isEdicao.value
+        ? 'Erro ao atualizar pesquisa. Tente novamente.'
+        : 'Erro ao publicar pesquisa. Tente novamente.';
     }
   } catch {
     clearInterval(progressInterval);
@@ -445,8 +501,50 @@ const handleSubmit = async () => {
   }
 };
 
+const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  if (!deveConfirmarSaida()) return;
+
+  event.preventDefault();
+  event.returnValue = '';
+};
+
+snapshotInicial.value = serializarForm();
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload);
+
+  if (!isEdicao.value) return;
+
+  const pesquisa = pesquisaEmEdicao.value;
+  if (!pesquisa) {
+    erroPublicacao.value = 'Pesquisa não encontrada para edição.';
+    return;
+  }
+
+  form.value = {
+    titulo: pesquisa.titulo,
+    resumo: pesquisa.resumo,
+    area: pesquisa.area,
+    orientador: pesquisa.orientador,
+    palavrasChave: [...(pesquisa.palavrasChave || [])],
+    pdf: null,
+    imagem: null,
+  };
+  imagemPreviewUrl.value = pesquisa.imagemUrl || '';
+  imagemRemovida.value = false;
+  snapshotInicial.value = serializarForm();
+});
+
+onBeforeRouteLeave(() => {
+  if (!deveConfirmarSaida()) return true;
+
+  return window.confirm('Descartar alterações não salvas?');
+});
+
 onBeforeUnmount(() => {
-  if (imagemPreviewUrl.value) {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+
+  if (imagemPreviewUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(imagemPreviewUrl.value);
   }
 });

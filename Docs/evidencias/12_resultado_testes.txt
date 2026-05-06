@@ -1,0 +1,61 @@
+﻿
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.5 [39m[90mC:/Users/vsilva/OneDrive - UNIMED N FLUMINENSE/Documentos/GitHub/iff-pesquisas/frontend[39m
+
+ [32mÔ£ô[39m src/__tests__/schemas/schemas.spec.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/stores/toast.store.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+node.exe : [90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > 
+[22m[2mrenderiza o t├¡tulo da pesquisa
+No linha:1 caractere:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([90mstderr[2m...ulo da pesquisa:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > 
+[22m[2mrenderiza nome do autor e orientador
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+ [32mÔ£ô[39m src/__tests__/components/SearchFilters.spec.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > [22m[2mexibe 
+badge de PDF quando pdfUrl est├í dispon├¡vel
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > [22m[2mN├âO 
+exibe badge de PDF quando pdfUrl ├® vazio
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > 
+[22m[2mrenderiza imagem de capa com loading="lazy"
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > [22m[2mlink 
+"Ver detalhes" aponta para /pesquisa/:id
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+[90mstderr[2m | src/__tests__/components/PesquisaCard.spec.ts[2m > [22m[2mPesquisaCard.vue[2m > [22m[2mexibe 
+no m├íximo 3 palavras-chave
+[22m[39m[Vue Router warn]: No match found for location with path "/"
+
+ [32mÔ£ô[39m src/__tests__/components/PesquisaCard.spec.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 74[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/stores/auth.store.spec.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mÔ£ô[39m src/__tests__/stores/pesquisa.store.spec.ts [2m([22m[2m19 tests[22m[2m)[22m[33m 5198[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m filtra por ├írea corretamente [33m 417[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m filtra por termo no t├¡tulo, resumo e palavras-chave [33m 410[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m filtra por autor (case-insensitive) [33m 408[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m filtra por orientador [33m 409[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m filtros combinados (├írea + termo) retornam interse├º├úo [33m 403[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m resetarFiltros() limpa todos os filtros [33m 406[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m criarPesquisa() adiciona pesquisa no in├¡cio da lista [33m 802[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m atualizarPesquisa() modifica pesquisa existente [33m 501[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m atualizarPesquisa() preserva imagemUrl quando imagem n├úo ├® alterada [33m 509[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m deletarPesquisa() remove pesquisa da lista [33m 307[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m encontra pesquisa por ID [33m 310[2mms[22m[39m
+       [33m[2mÔ£ô[22m[39m define erro quando pesquisa n├úo ├® encontrada [33m 303[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m53 passed[39m[22m[90m (53)[39m
+[2m   Start at [22m 11:53:25
+[2m   Duration [22m 6.93s[2m (transform 873ms, setup 283ms, import 2.34s, tests 5.35s, environment 5.37s)[22m
+

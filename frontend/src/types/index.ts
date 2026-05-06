@@ -1,4 +1,4 @@
-// Tipos de Usuario
+/** Usuário autenticado na plataforma IFF Pesquisas. */
 export interface Usuario {
   id: string;
   nome: string;
@@ -7,7 +7,7 @@ export interface Usuario {
   perfil: 'aluno' | 'professor' | 'coordenador';
 }
 
-// Tipos de Pesquisa/Post
+/** Pesquisa/post acadêmico publicado na plataforma. */
 export interface Pesquisa {
   id: string;
   titulo: string;
@@ -22,7 +22,7 @@ export interface Pesquisa {
   palavrasChave?: string[];
 }
 
-// Tipos de API Response
+/** Envelope padrão de resposta da API. */
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -30,7 +30,7 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-// Tipos de Filtros
+/** Filtros aplicáveis à busca de pesquisas no feed. */
 export interface FiltrosPesquisa {
   area?: string;
   autor?: string;
@@ -40,7 +40,7 @@ export interface FiltrosPesquisa {
   limite?: number;
 }
 
-// Tipos de Autenticacao
+/** Credenciais para login institucional. */
 export interface LoginPayload {
   email: string;
   senha: string;
@@ -51,13 +51,14 @@ export interface LoginResponse {
   usuario: Usuario;
 }
 
-// Tipos de Upload
+/** Progresso de upload de arquivo (PDF/imagem). */
 export interface UploadProgress {
   percent: number;
   loaded: number;
   total: number;
 }
 
+/** Dados necessários para criação de nova pesquisa. */
 export interface CreatePostPayload {
   titulo: string;
   resumo: string;
@@ -66,4 +67,9 @@ export interface CreatePostPayload {
   palavrasChave: string[];
   pdf?: File | null;
   imagem?: File | null;
+}
+
+/** Dados para atualização de pesquisa existente, com flag opcional para remoção de imagem. */
+export interface UpdatePostPayload extends CreatePostPayload {
+  removerImagem?: boolean;
 }

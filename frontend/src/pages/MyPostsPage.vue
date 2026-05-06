@@ -65,7 +65,7 @@
               class="badge"
               :class="post.status === 'publica' ? 'badge-success' : 'badge-warning'"
             >
-              {{ post.status === 'publica' ? 'Publicada' : post.status }}
+              {{ post.status === 'publica' ? 'Publicada' : 'Rascunho' }}
             </span>
           </div>
           <h3 class="post-title">{{ post.titulo }}</h3>
@@ -79,6 +79,21 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
             Ver
           </router-link>
+          <router-link :to="`/editar-post/${post.id}`" class="btn btn-outline btn-sm" :id="`btn-edit-${post.id}`">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4z"/></svg>
+            Editar
+          </router-link>
+          <button
+            @click="handleToggleStatus(post.id, post.status)"
+            class="btn btn-sm"
+            :class="post.status === 'publica' ? 'btn-outline' : 'btn-success'"
+            :id="`btn-toggle-${post.id}`"
+            :title="post.status === 'publica' ? 'Despublicar esta pesquisa' : 'Publicar esta pesquisa'"
+          >
+            <svg v-if="post.status === 'publica'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            {{ post.status === 'publica' ? 'Despublicar' : 'Publicar' }}
+          </button>
           <button @click="handleDelete(post.id)" class="btn btn-danger btn-sm" :id="`btn-delete-${post.id}`">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
             Excluir
@@ -111,9 +126,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
+import { useToastStore } from '@/stores/toast.store';
 import type { Pesquisa } from '@/types';
 
 const pesquisaStore = usePesquisaStore();
+const toastStore = useToastStore();
 const carregando = ref(false);
 const showDeleteModal = ref(false);
 const deleteTargetId = ref('');
@@ -147,6 +164,20 @@ const confirmarDelete = async () => {
   await pesquisaStore.deletarPesquisa(deleteTargetId.value);
   showDeleteModal.value = false;
   deleteTargetId.value = '';
+  toastStore.notificar('Pesquisa excluída com sucesso.', 'success');
+};
+
+const handleToggleStatus = (id: string, statusAtual: string) => {
+  const sucesso = pesquisaStore.alternarStatus(id);
+  if (sucesso) {
+    const novoStatus = statusAtual === 'publica' ? 'rascunho' : 'publica';
+    toastStore.notificar(
+      novoStatus === 'publica'
+        ? 'Pesquisa publicada no feed.'
+        : 'Pesquisa removida do feed (rascunho).',
+      novoStatus === 'publica' ? 'success' : 'warning',
+    );
+  }
 };
 </script>
 

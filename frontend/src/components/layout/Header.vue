@@ -24,6 +24,22 @@
       <nav class="nav" :class="{ 'nav-open': menuAberto }" id="main-nav">
         <router-link to="/" class="nav-link" @click="fecharMenu" id="nav-home">Início</router-link>
         <router-link to="/feed" class="nav-link" @click="fecharMenu" id="nav-feed">Explorar</router-link>
+        <button
+          type="button"
+          class="theme-toggle"
+          @click="alternarTema"
+          :aria-label="temaEscuro ? 'Ativar tema claro' : 'Ativar tema escuro'"
+          :title="temaEscuro ? 'Tema claro' : 'Tema escuro'"
+          id="theme-toggle"
+        >
+          <svg v-if="temaEscuro" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <circle cx="12" cy="12" r="4"/>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
         <template v-if="isAutenticado">
           <router-link to="/criar-post" class="nav-link nav-cta" @click="fecharMenu" id="nav-publish">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -51,13 +67,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
 
 const { isAutenticado, usuario, logout } = useAuth();
 const router = useRouter();
 const menuAberto = ref(false);
+const temaEscuro = ref(false);
+
+const aplicarTema = (escuro: boolean) => {
+  temaEscuro.value = escuro;
+  document.documentElement.dataset.theme = escuro ? 'dark' : 'light';
+  localStorage.setItem('theme', escuro ? 'dark' : 'light');
+};
+
+const alternarTema = () => {
+  aplicarTema(!temaEscuro.value);
+};
 
 const fecharMenu = () => {
   menuAberto.value = false;
@@ -68,6 +95,12 @@ const handleLogout = () => {
   fecharMenu();
   router.push('/');
 };
+
+onMounted(() => {
+  const temaSalvo = localStorage.getItem('theme');
+  const prefereEscuro = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  aplicarTema(temaSalvo ? temaSalvo === 'dark' : prefereEscuro);
+});
 </script>
 
 <style scoped>
@@ -161,6 +194,26 @@ const handleLogout = () => {
 .nav-link.router-link-active:not(.nav-cta) {
   background: var(--primary-light);
   color: var(--primary);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
 }
 
 .nav-cta {
@@ -286,6 +339,11 @@ const handleLogout = () => {
     font-size: 0.95rem;
   }
 
+  .theme-toggle {
+    width: 100%;
+    border-radius: var(--radius-md);
+  }
+
   .nav-divider {
     width: 100%;
     height: 1px;
@@ -303,5 +361,10 @@ const handleLogout = () => {
     justify-content: center;
     padding: 0.6rem 1rem;
   }
+}
+
+:global(html[data-theme='dark']) .header {
+  background: rgba(12, 21, 39, 0.9);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 </style>

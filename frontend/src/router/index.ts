@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
+import { useToastStore } from '@/stores/toast.store';
 
 // Importar paginas
 const HomePage = () => import('@/pages/HomePage.vue');
@@ -8,6 +9,7 @@ const FeedPage = () => import('@/pages/FeedPage.vue');
 const PesquisaDetailPage = () => import('@/pages/PesquisaDetailPage.vue');
 const CreatePostPage = () => import('@/pages/CreatePostPage.vue');
 const MyPostsPage = () => import('@/pages/MyPostsPage.vue');
+const RecoverPasswordPage = () => import('@/pages/RecoverPasswordPage.vue');
 const NotFoundPage = () => import('@/pages/NotFoundPage.vue');
 
 const routes: RouteRecordRaw[] = [
@@ -20,6 +22,12 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'Login',
     component: LoginPage,
+    meta: { requiresGuest: true },
+  },
+  {
+    path: '/recuperar-senha',
+    name: 'RecoverPassword',
+    component: RecoverPasswordPage,
     meta: { requiresGuest: true },
   },
   {
@@ -39,6 +47,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/editar-post/:id',
+    name: 'EditPost',
+    component: CreatePostPage,
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/meus-posts',
     name: 'MyPosts',
     component: MyPostsPage,
@@ -54,16 +68,32 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition;
+    }
+
+    if (to.fullPath !== from.fullPath) {
+      return { top: 0 };
+    }
+
+    return false;
+  },
 });
 
 // Guard de autenticacao
 router.beforeEach((to) => {
   const authStore = useAuthStore();
+  const toastStore = useToastStore();
   const requerAuth = to.meta.requiresAuth;
   const requerGuest = to.meta.requiresGuest;
 
   if (requerAuth && !authStore.isAutenticado) {
-    return '/login';
+    toastStore.notificar('Faça login para acessar esta página.', 'warning');
+    return {
+      name: 'Login',
+      query: { redirect: to.fullPath },
+    };
   }
 
   if (requerGuest && authStore.isAutenticado) {

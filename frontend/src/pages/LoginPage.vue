@@ -142,6 +142,7 @@
 
         <div class="login-footer">
           <span class="muted text-sm">Ambiente seguro com autenticação institucional.</span>
+          <router-link to="/recuperar-senha" class="text-sm" id="link-recover-password">Esqueci minha senha</router-link>
           <router-link to="/" class="text-sm" id="link-back-home">← Voltar para a home</router-link>
         </div>
       </div>
@@ -151,10 +152,11 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuth } from '@/composables/useAuth';
 
 const router = useRouter();
+const route = useRoute();
 const { login, carregando, erro } = useAuth();
 
 const email = ref('');
@@ -164,7 +166,8 @@ const mostrarSenha = ref(false);
 const handleLogin = async () => {
   const sucesso = await login(email.value, senha.value);
   if (sucesso) {
-    router.push('/feed');
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/feed';
+    router.push(redirect);
   }
 };
 </script>

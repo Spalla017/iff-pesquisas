@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Usuario, LoginPayload } from '@/types';
+import { loginSchema, extrairErroZod } from '@/schemas';
 import api from '@/services/api';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -12,7 +13,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Computed
   const isAutenticado = computed(() => !!token.value);
 
-  // Carregar usuario salvo ao iniciar
+  /**
+   * Restaura a sessão do usuário a partir do localStorage.
+   * Deve ser chamado na inicialização da aplicação (App.vue).
+   */
   const carregarUsuarioSalvo = () => {
     const usuarioSalvo = localStorage.getItem('usuario');
     const tokenSalvo = localStorage.getItem('token');
@@ -23,15 +27,30 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  // Login
+  /**
+   * Realiza login institucional com validação via schema Zod.
+   * Em ambiente de desenvolvimento (sem API), utiliza login simulado.
+   *
+   * @param payload - Credenciais com email e senha
+   * @returns `true` se autenticado com sucesso, `false` caso contrário
+   */
   const login = async (payload: LoginPayload) => {
     carregando.value = true;
     erro.value = null;
 
     try {
+      const email = payload.email.trim().toLowerCase();
+      const senha = payload.senha.trim();
+
+      const validacao = loginSchema.safeParse({ email: email, senha: senha });
+      if (!validacao.success) {
+        erro.value = extrairErroZod(validacao);
+        return false;
+      }
+
       if (usarLoginDev(payload)) {
         token.value = 'dev-token';
-        usuario.value = criarUsuarioDev(payload.email);
+        usuario.value = criarUsuarioDev(email);
 
         localStorage.setItem('token', token.value);
         localStorage.setItem('usuario', JSON.stringify(usuario.value));
@@ -82,7 +101,9 @@ export const useAuthStore = defineStore('auth', () => {
       .join(' ') || 'Aluno IFF';
   };
 
-  // Logout
+  /**
+   * Encerra a sessão do usuário, limpando estado reativo e localStorage.
+   */
   const logout = () => {
     usuario.value = null;
     token.value = null;

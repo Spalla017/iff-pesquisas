@@ -39,13 +39,36 @@
         :tem-filtros-ativos="temFiltrosAtivos"
         @limpar="limparFiltros"
       />
+      <p class="sr-only" aria-live="polite">{{ anuncioResultados }}</p>
     </section>
 
     <!-- Loading State -->
-    <div v-if="carregando" class="loading-container">
-      <div class="loading-spinner"></div>
-      <p class="muted">Carregando pesquisas...</p>
-    </div>
+    <section v-if="carregando || buscaPendente" class="feed-results reveal reveal-delay-2" aria-busy="true">
+      <div class="results-toolbar">
+        <div>
+          <span class="toolbar-kicker">Resultados</span>
+          <strong>Atualizando pesquisas</strong>
+        </div>
+        <span class="muted text-sm">{{ buscaPendente ? 'Aplicando filtros...' : 'Carregando pesquisas...' }}</span>
+      </div>
+
+      <div class="results-grid">
+        <article v-for="item in 6" :key="item" class="pesquisa-card-skeleton card" aria-hidden="true">
+          <div class="skeleton skeleton-media"></div>
+          <div class="skeleton-row">
+            <span class="skeleton skeleton-pill"></span>
+            <span class="skeleton skeleton-pill skeleton-pill-short"></span>
+          </div>
+          <div class="skeleton skeleton-title"></div>
+          <div class="skeleton skeleton-text"></div>
+          <div class="skeleton skeleton-text skeleton-text-short"></div>
+          <div class="skeleton-footer">
+            <span class="skeleton skeleton-avatar"></span>
+            <span class="skeleton skeleton-link"></span>
+          </div>
+        </article>
+      </div>
+    </section>
 
     <!-- Error State -->
     <div v-else-if="erro" class="alert alert-danger">
@@ -120,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute } from 'vue-router';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
 import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
@@ -135,6 +158,7 @@ const termoBusca = ref('');
 const areaSelecionada = ref('');
 const autorBusca = ref('');
 const orientadorBusca = ref('');
+const buscaPendente = ref(false);
 
 const areas = AREAS_DISPONIVEIS;
 
@@ -155,6 +179,14 @@ const areasUnicas = computed(() => {
 const temFiltrosAtivos = computed(() =>
   !!termoBusca.value || !!areaSelecionada.value || !!autorBusca.value || !!orientadorBusca.value
 );
+const anuncioResultados = computed(() => {
+  if (carregando.value || buscaPendente.value) {
+    return 'Atualizando resultados de pesquisa.';
+  }
+
+  const total = pesquisasFiltradas.value.length;
+  return `${total} pesquisa${total !== 1 ? 's' : ''} encontrada${total !== 1 ? 's' : ''}.`;
+});
 
 const paginasVisiveis = computed(() => {
   const total = totalPaginas.value;
@@ -172,20 +204,24 @@ const paginasVisiveis = computed(() => {
 let debounceTimer: ReturnType<typeof setTimeout>;
 
 const sincronizarFiltros = () => {
+  buscaPendente.value = true;
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    pesquisaStore.buscarPesquisas({
+  debounceTimer = setTimeout(async () => {
+    await pesquisaStore.buscarPesquisas({
       termo: termoBusca.value || undefined,
       area: areaSelecionada.value || undefined,
       autor: autorBusca.value || undefined,
       orientador: orientadorBusca.value || undefined,
     });
+    buscaPendente.value = false;
   }, 250);
 };
 
 watch([termoBusca, areaSelecionada, autorBusca, orientadorBusca], sincronizarFiltros);
 
 const limparFiltros = () => {
+  buscaPendente.value = false;
+  clearTimeout(debounceTimer);
   termoBusca.value = '';
   areaSelecionada.value = '';
   autorBusca.value = '';
@@ -210,6 +246,10 @@ onMounted(() => {
     termo: queryBusca || undefined,
     area: queryArea || undefined,
   });
+});
+
+onBeforeUnmount(() => {
+  clearTimeout(debounceTimer);
 });
 </script>
 
@@ -362,6 +402,75 @@ onMounted(() => {
   background: var(--primary) !important;
   color: #fff !important;
   border-color: var(--primary) !important;
+}
+
+/* Skeleton */
+.pesquisa-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.skeleton-media {
+  height: 168px;
+  margin: -1.5rem -1.5rem 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.skeleton-row,
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skeleton-row {
+  justify-content: space-between;
+}
+
+.skeleton-pill {
+  width: 96px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+}
+
+.skeleton-pill-short {
+  width: 74px;
+}
+
+.skeleton-title {
+  width: 88%;
+  height: 24px;
+}
+
+.skeleton-text {
+  width: 100%;
+  height: 14px;
+}
+
+.skeleton-text-short {
+  width: 68%;
+}
+
+.skeleton-footer {
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.skeleton-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.skeleton-link {
+  width: 104px;
+  height: 32px;
+  border-radius: var(--radius-pill);
 }
 
 @media (max-width: 1024px) {

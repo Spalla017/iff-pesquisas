@@ -33,15 +33,15 @@
       <aside class="hero-panel reveal reveal-delay-1" aria-label="Resumo do acervo">
         <div class="panel-header">
           <span class="panel-kicker">Panorama</span>
-          <strong>{{ totalPesquisas }} pesquisas catalogadas</strong>
+          <strong>{{ totalPesquisasAnimado }} pesquisas catalogadas</strong>
         </div>
         <div class="metric-grid">
           <div class="metric">
-            <strong>{{ totalAreas }}</strong>
+            <strong>{{ totalAreasAnimado }}</strong>
             <span>áreas</span>
           </div>
           <div class="metric">
-            <strong>{{ pesquisasComPdf }}</strong>
+            <strong>{{ pesquisasComPdfAnimado }}</strong>
             <span>com PDF</span>
           </div>
           <div class="metric">
@@ -105,13 +105,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, type Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import PesquisaCard from '@/components/common/PesquisaCard.vue';
 import { AREAS_DISPONIVEIS, mockPesquisas } from '@/data/mockPesquisas';
 
 const router = useRouter();
 const busca = ref('');
+const totalPesquisasAnimado = ref(0);
+const totalAreasAnimado = ref(0);
+const pesquisasComPdfAnimado = ref(0);
 
 const pesquisasOrdenadas = computed(() =>
   [...mockPesquisas].sort(
@@ -145,6 +148,29 @@ const explorarBusca = () => {
     query: termo ? { q: termo } : undefined,
   });
 };
+
+const animarNumero = (alvo: Ref<number>, valorFinal: number) => {
+  const duracao = 850;
+  const inicio = performance.now();
+
+  const atualizar = (agora: number) => {
+    const progresso = Math.min((agora - inicio) / duracao, 1);
+    const suavizado = 1 - Math.pow(1 - progresso, 3);
+    alvo.value = Math.round(valorFinal * suavizado);
+
+    if (progresso < 1) {
+      requestAnimationFrame(atualizar);
+    }
+  };
+
+  requestAnimationFrame(atualizar);
+};
+
+onMounted(() => {
+  animarNumero(totalPesquisasAnimado, totalPesquisas.value);
+  animarNumero(totalAreasAnimado, totalAreas.value);
+  animarNumero(pesquisasComPdfAnimado, pesquisasComPdf.value);
+});
 </script>
 
 <style scoped>

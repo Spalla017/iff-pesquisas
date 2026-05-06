@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <Header />
+    <ToastContainer />
     <main>
       <div class="container">
         <router-view v-slot="{ Component }">
@@ -44,13 +45,34 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth.store'
-import { onMounted } from 'vue'
+import { onBeforeUnmount, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import Header from '@/components/layout/Header.vue'
+import ToastContainer from '@/components/common/ToastContainer.vue'
 
 const authStore = useAuthStore()
+const router = useRouter()
+
+const handleGlobalShortcut = (event: KeyboardEvent) => {
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') {
+    return
+  }
+
+  event.preventDefault()
+  router.push('/feed').then(() => {
+    window.setTimeout(() => {
+      document.getElementById('search-input')?.focus()
+    }, 80)
+  })
+}
 
 onMounted(() => {
   authStore.carregarUsuarioSalvo()
+  window.addEventListener('keydown', handleGlobalShortcut)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleGlobalShortcut)
 })
 </script>
 

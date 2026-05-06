@@ -1,6 +1,11 @@
 import { useAuthStore } from '@/stores/auth.store';
 import { computed } from 'vue';
 
+/**
+ * Composable wrapper para o store de autenticação.
+ * Fornece acesso reativo ao estado de auth e métodos de login/logout
+ * sem expor o store Pinia diretamente ao componente.
+ */
 export const useAuth = () => {
   const authStore = useAuthStore();
 
