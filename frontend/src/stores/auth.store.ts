@@ -85,7 +85,7 @@ export const useAuthStore = defineStore('auth', () => {
     payload.senha.trim().length >= 4;
 
   const criarUsuarioDev = (email: string): Usuario => ({
-    id: 'dev-user',
+    id: `dev-${email}`,
     nome: extrairNomeDev(email),
     email,
     matricula: '0000000',

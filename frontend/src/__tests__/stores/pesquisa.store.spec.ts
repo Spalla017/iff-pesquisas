@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
+import { useAuthStore } from '@/stores/auth.store';
 
 describe('pesquisa.store', () => {
   let store: ReturnType<typeof usePesquisaStore>;
@@ -97,6 +98,46 @@ describe('pesquisa.store', () => {
       expect(store.todasPesquisas[0].titulo).toBe('Nova pesquisa de teste');
     });
 
+    it('criarPesquisa() usa o usuario autenticado como autor', async () => {
+      const authStore = useAuthStore();
+      await authStore.login({
+        email: 'ana.teste@iff.edu.br',
+        senha: 'senha123',
+      });
+
+      await store.criarPesquisa({
+        titulo: 'Pesquisa com autoria',
+        resumo: 'Resumo da pesquisa com autoria',
+        area: 'Tecnologia',
+        orientador: 'Prof. Teste',
+        palavrasChave: ['autoria'],
+        pdf: null,
+        imagem: null,
+      });
+
+      expect(store.todasPesquisas[0].autor).toBe('Ana Teste');
+      expect(store.todasPesquisas[0].autorId).toBe('dev-ana.teste@iff.edu.br');
+      expect(store.todasPesquisas[0].autorEmail).toBe('ana.teste@iff.edu.br');
+    });
+
+    it('persiste pesquisas criadas no localStorage', async () => {
+      await store.criarPesquisa({
+        titulo: 'Pesquisa persistida',
+        resumo: 'Resumo da pesquisa persistida',
+        area: 'Tecnologia',
+        orientador: 'Prof. Teste',
+        palavrasChave: ['persistencia'],
+        pdf: null,
+        imagem: null,
+      });
+
+      setActivePinia(createPinia());
+      const novoStore = usePesquisaStore();
+
+      expect(novoStore.todasPesquisas[0].titulo).toBe('Pesquisa persistida');
+      expect(novoStore.todasPesquisas[0].dataPublicacao).toBeInstanceOf(Date);
+    });
+
     it('atualizarPesquisa() modifica pesquisa existente', async () => {
       const id = store.todasPesquisas[0].id;
 
@@ -113,6 +154,25 @@ describe('pesquisa.store', () => {
       expect(sucesso).toBe(true);
       const atualizada = store.todasPesquisas.find(p => p.id === id);
       expect(atualizada?.titulo).toBe('Titulo atualizado');
+    });
+
+    it('atualizarPesquisa() persiste alteracao depois de reinicializar o store', async () => {
+      const id = store.todasPesquisas[0].id;
+
+      await store.atualizarPesquisa(id, {
+        titulo: 'Titulo persistido',
+        resumo: 'Resumo persistido',
+        area: 'Educacao',
+        orientador: 'Prof. Novo',
+        palavrasChave: ['persistido'],
+        pdf: null,
+        imagem: null,
+      });
+
+      setActivePinia(createPinia());
+      const novoStore = usePesquisaStore();
+
+      expect(novoStore.todasPesquisas.find(p => p.id === id)?.titulo).toBe('Titulo persistido');
     });
 
     it('atualizarPesquisa() preserva imagemUrl quando imagem nao e alterada', async () => {
@@ -168,14 +228,60 @@ describe('pesquisa.store', () => {
       expect(store.erro).toContain('encontrada');
     });
 
-    it('retorna rascunho quando incluirRascunhos e true', async () => {
+    it('retorna rascunho quando o usuario autenticado e dono', async () => {
+      const authStore = useAuthStore();
+      await authStore.login({
+        email: 'dono.rascunho@iff.edu.br',
+        senha: 'senha123',
+      });
+      await store.criarPesquisa({
+        titulo: 'Rascunho do dono',
+        resumo: 'Resumo do rascunho do dono',
+        area: 'Tecnologia',
+        orientador: 'Prof. Dono',
+        palavrasChave: [],
+        pdf: null,
+        imagem: null,
+      });
       const id = store.todasPesquisas[0].id;
       store.alternarStatus(id);
 
-      await store.buscarPorId(id, { incluirRascunhos: true });
+      await store.buscarPorId(id, {
+        incluirRascunhos: true,
+        usuarioId: authStore.usuario?.id,
+        usuarioEmail: authStore.usuario?.email,
+      });
 
       expect(store.pesquisaSelecionada?.id).toBe(id);
       expect(store.pesquisaSelecionada?.status).toBe('rascunho');
+    });
+
+    it('nao retorna rascunho quando o usuario autenticado nao e dono', async () => {
+      const authStore = useAuthStore();
+      await authStore.login({
+        email: 'dono.rascunho@iff.edu.br',
+        senha: 'senha123',
+      });
+      await store.criarPesquisa({
+        titulo: 'Rascunho privado',
+        resumo: 'Resumo do rascunho privado',
+        area: 'Tecnologia',
+        orientador: 'Prof. Dono',
+        palavrasChave: [],
+        pdf: null,
+        imagem: null,
+      });
+      const id = store.todasPesquisas[0].id;
+      store.alternarStatus(id);
+
+      await store.buscarPorId(id, {
+        incluirRascunhos: true,
+        usuarioId: 'dev-outro.usuario@iff.edu.br',
+        usuarioEmail: 'outro.usuario@iff.edu.br',
+      });
+
+      expect(store.pesquisaSelecionada).toBeNull();
+      expect(store.erro).toContain('encontrada');
     });
   });
 

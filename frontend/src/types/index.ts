@@ -14,6 +14,8 @@ export interface Pesquisa {
   resumo: string;
   area: string;
   autor: string;
+  autorId?: string;
+  autorEmail?: string;
   orientador: string;
   dataPublicacao: Date;
   pdfUrl?: string;

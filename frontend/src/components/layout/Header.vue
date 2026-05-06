@@ -315,7 +315,7 @@ onMounted(() => {
   .nav {
     position: fixed;
     top: 0;
-    right: -100%;
+    right: 0;
     width: 280px;
     height: 100vh;
     background: var(--surface);
@@ -324,13 +324,14 @@ onMounted(() => {
     padding: 5rem 1.5rem 2rem;
     gap: 0.25rem;
     box-shadow: var(--shadow-lg);
-    transition: right var(--transition-slow);
+    transform: translateX(100%);
+    transition: transform var(--transition-slow);
     z-index: 100;
     overflow-y: auto;
   }
 
   .nav-open {
-    right: 0;
+    transform: translateX(0);
   }
 
   .nav-link {

@@ -159,7 +159,11 @@ const pdfDisponivel = computed(() => Boolean(pesquisa.value?.pdfUrl && pesquisa.
 
 onMounted(() => {
   const id = route.params.id as string;
-  pesquisaStore.buscarPorId(id, { incluirRascunhos: authStore.isAutenticado });
+  pesquisaStore.buscarPorId(id, {
+    incluirRascunhos: authStore.isAutenticado,
+    usuarioId: authStore.usuario?.id,
+    usuarioEmail: authStore.usuario?.email,
+  });
 });
 
 const formatarData = (data: Date) => {

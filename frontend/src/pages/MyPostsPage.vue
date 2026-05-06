@@ -126,17 +126,27 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useToastStore } from '@/stores/toast.store';
 import type { Pesquisa } from '@/types';
 
 const pesquisaStore = usePesquisaStore();
+const authStore = useAuthStore();
 const toastStore = useToastStore();
 const carregando = ref(false);
 const showDeleteModal = ref(false);
 const deleteTargetId = ref('');
 
-// In a real app, this would filter by current user
-const posts = computed<Pesquisa[]>(() => pesquisaStore.todasPesquisas.slice(0, 4));
+const posts = computed<Pesquisa[]>(() => {
+  const usuario = authStore.usuario;
+  if (!usuario) {
+    return [];
+  }
+
+  return pesquisaStore.todasPesquisas
+    .filter(post => post.autorEmail === usuario.email || post.autorId === usuario.id)
+    .sort((a, b) => new Date(b.dataPublicacao).getTime() - new Date(a.dataPublicacao).getTime());
+});
 
 const areasPublicadas = computed(() => {
   const areasSet = new Set(posts.value.map(p => p.area));

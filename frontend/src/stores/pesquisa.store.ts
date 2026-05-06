@@ -2,19 +2,111 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Pesquisa, FiltrosPesquisa, CreatePostPayload, UpdatePostPayload } from '@/types';
 import { mockPesquisas } from '@/data/mockPesquisas';
+import { useAuthStore } from '@/stores/auth.store';
 
 interface BuscarPorIdOptions {
   incluirRascunhos?: boolean;
+  usuarioId?: string;
+  usuarioEmail?: string;
 }
+
+type PesquisaPersistida = Omit<Pesquisa, 'dataPublicacao'> & {
+  dataPublicacao: string;
+};
+
+const STORAGE_KEY = 'iff-pesquisas:pesquisas:v1';
+
+const isBrowser = () => typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+
+const limparUrlTemporaria = (url?: string) => {
+  if (!url || url.startsWith('blob:')) {
+    return '';
+  }
+
+  return url;
+};
+
+const normalizarPesquisa = (pesquisa: Pesquisa | PesquisaPersistida): Pesquisa => ({
+  ...pesquisa,
+  dataPublicacao: new Date(pesquisa.dataPublicacao),
+  pdfUrl: limparUrlTemporaria(pesquisa.pdfUrl),
+  imagemUrl: limparUrlTemporaria(pesquisa.imagemUrl),
+});
+
+const carregarPesquisasPersistidas = (): Pesquisa[] => {
+  if (!isBrowser()) {
+    return [...mockPesquisas];
+  }
+
+  const bruto = localStorage.getItem(STORAGE_KEY);
+  if (!bruto) {
+    return [...mockPesquisas];
+  }
+
+  try {
+    const parsed = JSON.parse(bruto) as PesquisaPersistida[];
+    if (!Array.isArray(parsed)) {
+      return [...mockPesquisas];
+    }
+
+    return parsed.map(normalizarPesquisa);
+  } catch {
+    localStorage.removeItem(STORAGE_KEY);
+    return [...mockPesquisas];
+  }
+};
+
+const serializarPesquisa = (pesquisa: Pesquisa): PesquisaPersistida => ({
+  ...pesquisa,
+  dataPublicacao: new Date(pesquisa.dataPublicacao).toISOString(),
+  pdfUrl: limparUrlTemporaria(pesquisa.pdfUrl),
+  imagemUrl: limparUrlTemporaria(pesquisa.imagemUrl),
+});
+
+const usuarioPodeVerRascunho = (pesquisa: Pesquisa, options: BuscarPorIdOptions) => {
+  if (!options.incluirRascunhos || pesquisa.status !== 'rascunho') {
+    return false;
+  }
+
+  if (pesquisa.autorEmail) {
+    return pesquisa.autorEmail === options.usuarioEmail;
+  }
+
+  if (pesquisa.autorId) {
+    return pesquisa.autorId === options.usuarioId;
+  }
+
+  return false;
+};
 
 export const usePesquisaStore = defineStore('pesquisa', () => {
   // State
-  const todasPesquisas = ref<Pesquisa[]>([...mockPesquisas]);
+  const todasPesquisas = ref<Pesquisa[]>(carregarPesquisasPersistidas());
   const pesquisaSelecionada = ref<Pesquisa | null>(null);
   const carregando = ref(false);
   const erro = ref<string | null>(null);
   const paginacao = ref({ pagina: 1, limite: 6, total: 0 });
   const filtros = ref<FiltrosPesquisa>({});
+
+  const persistirPesquisas = () => {
+    if (!isBrowser()) {
+      return;
+    }
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(todasPesquisas.value.map(serializarPesquisa)),
+    );
+  };
+
+  const proximoId = () => {
+    const maiorIdNumerico = todasPesquisas.value.reduce((maior, pesquisa) => {
+      const idNumerico = Number(pesquisa.id);
+      return Number.isFinite(idNumerico) ? Math.max(maior, idNumerico) : maior;
+    }, 0);
+
+    return String(maiorIdNumerico + 1);
+  };
 
   // Computed — pesquisas filtradas e paginadas
   const pesquisasFiltradas = computed(() => {
@@ -112,7 +204,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
       const encontrada = todasPesquisas.value.find(p =>
-        p.id === id && (p.status === 'publica' || (options.incluirRascunhos && p.status === 'rascunho')),
+        p.id === id && (p.status === 'publica' || usuarioPodeVerRascunho(p, options)),
       );
       if (encontrada) {
         pesquisaSelecionada.value = encontrada;
@@ -139,13 +231,17 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
+      const authStore = useAuthStore();
+      const usuario = authStore.usuario;
 
       const novaPesquisa: Pesquisa = {
-        id: String(todasPesquisas.value.length + 1),
+        id: proximoId(),
         titulo: payload.titulo,
         resumo: payload.resumo,
         area: payload.area,
-        autor: 'Você',
+        autor: usuario?.nome || 'Você',
+        autorId: usuario?.id,
+        autorEmail: usuario?.email,
         orientador: payload.orientador,
         dataPublicacao: new Date(),
         pdfUrl: payload.pdf ? URL.createObjectURL(payload.pdf) : '',
@@ -155,6 +251,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
       };
 
       todasPesquisas.value.unshift(novaPesquisa);
+      persistirPesquisas();
       return true;
     } catch (err: any) {
       erro.value = err.message || 'Erro ao criar pesquisa';
@@ -201,6 +298,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
       };
 
       todasPesquisas.value.splice(index, 1, pesquisaAtualizada);
+      persistirPesquisas();
 
       if (pesquisaSelecionada.value?.id === id) {
         pesquisaSelecionada.value = pesquisaAtualizada;
@@ -225,6 +323,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
       todasPesquisas.value = todasPesquisas.value.filter(p => p.id !== id);
+      persistirPesquisas();
       if (pesquisaSelecionada.value?.id === id) {
         pesquisaSelecionada.value = null;
       }
@@ -250,6 +349,7 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
       ...todasPesquisas.value[index],
       status: novoStatus,
     };
+    persistirPesquisas();
 
     if (pesquisaSelecionada.value?.id === id) {
       pesquisaSelecionada.value = todasPesquisas.value[index];

@@ -50,3 +50,25 @@ test('dark mode alterna tema', async ({ page }) => {
     temaInicial === 'dark' ? 'light' : 'dark',
   );
 });
+
+test('menu mobile abre dentro do viewport e navega para feed', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await page.locator('#mobile-menu-toggle').click();
+  await expect(page.locator('#main-nav')).toHaveClass(/nav-open/);
+
+  await expect.poll(async () => {
+    const box = await page.locator('#main-nav').boundingBox();
+    return box ? Math.round(box.x + box.width) : 999;
+  }).toBeLessThanOrEqual(390);
+
+  const navBox = await page.locator('#main-nav').boundingBox();
+  expect(navBox).not.toBeNull();
+  expect(navBox!.x).toBeGreaterThanOrEqual(0);
+  expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(390);
+
+  await page.locator('#nav-feed').click();
+  await expect(page).toHaveURL(/\/feed$/);
+  await expect(page.locator('#search-input')).toBeVisible();
+});

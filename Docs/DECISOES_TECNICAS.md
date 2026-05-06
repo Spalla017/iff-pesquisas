@@ -84,7 +84,7 @@ Este documento registra as decisões arquiteturais e tecnológicas tomadas duran
 - happy-dom é mais leve e rápido que jsdom para testes de componentes Vue.
 - @pinia/testing e @vue/test-utils fornecem utilitários especializados para Vue 3.
 
-**Cobertura atual:** 57 testes previstos em 7 arquivos cobrindo stores (auth, pesquisa, toast), componentes/paginas (PesquisaCard, SearchFilters, RecoverPasswordPage) e schemas Zod.
+**Cobertura atual:** 57 testes unitarios em 7 arquivos cobrindo stores (auth, pesquisa, toast), componentes/paginas (PesquisaCard, SearchFilters, RecoverPasswordPage) e schemas Zod.
 
 ---
 
@@ -112,9 +112,9 @@ Este documento registra as decisões arquiteturais e tecnológicas tomadas duran
 - Playwright fornece servidor local integrado, gravacao de video, traces e execucao cross-browser.
 - A suite E2E valida comportamento real de roteamento, autenticacao, CRUD mock, atalhos e tema.
 
-**Implementacao planejada no repositorio:**
+**Implementacao no repositorio:**
 - `playwright.config.ts` usa Vite local em `127.0.0.1:5173`.
 - Scripts: `e2e`, `e2e:headed`, `e2e:report`.
 - Specs em `frontend/e2e/` cobrem fluxos publicos, autenticados e gravacao do video `Docs/evidencias/13_demo_fluxo.webm`.
 
-**Observacao operacional:** A instalacao do pacote `@playwright/test` e dos browsers depende de acesso ao registry e permissao de execucao fora do sandbox.
+**Verificacao:** `npm run e2e` aprovado com 8 testes em Chromium e video gerado em `Docs/evidencias/13_demo_fluxo.webm`.

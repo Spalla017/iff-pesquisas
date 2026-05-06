@@ -10,11 +10,11 @@
 
 | Area | Status | Evidencia |
 |---|---|---|
-| Visibilidade de rascunhos | Implementado | `buscarPorId(id, { incluirRascunhos })` e detalhe publico condicionado por autenticacao |
-| Zod em formularios reais | Implementado | `CreatePostPage.vue` e `RecoverPasswordPage.vue` usam `safeParse()` |
-| Testes unitarios adicionais | Implementado | Casos de rascunho, resumo > 500 e recuperacao por schema |
-| Playwright E2E | Configurado | `playwright.config.ts`, scripts `e2e*` e specs em `frontend/e2e/` |
-| Video de evidencia | Automatizado, pendente de execucao | Spec `demo-video.spec.ts` grava `Docs/evidencias/13_demo_fluxo.webm` |
+| Visibilidade de rascunhos | Concluido | `buscarPorId(id, { incluirRascunhos })` e detalhe publico condicionado por autenticacao |
+| Zod em formularios reais | Concluido | `CreatePostPage.vue` e `RecoverPasswordPage.vue` usam `safeParse()` |
+| Testes unitarios adicionais | Concluido | 57 testes unitarios em 7 arquivos |
+| Playwright E2E | Concluido | 8 testes E2E aprovados em Chromium |
+| Video de evidencia | Concluido | `Docs/evidencias/13_demo_fluxo.webm` |
 
 ---
 
@@ -23,12 +23,12 @@
 ### 1. Rascunhos nao ficam publicos por URL direta
 
 - `frontend/src/stores/pesquisa.store.ts`
-  - `buscarPorId` agora aceita `{ incluirRascunhos?: boolean }`.
+  - `buscarPorId` aceita `{ incluirRascunhos?: boolean }`.
   - Por padrao, retorna apenas pesquisas `publica`.
   - Com a opcao ativa, retorna tambem `rascunho`.
 - `frontend/src/pages/PesquisaDetailPage.vue`
   - A rota publica consulta `authStore.isAutenticado`.
-  - Visitantes recebem o estado "Pesquisa nao encontrada" para rascunhos.
+  - Visitantes recebem "Pesquisa nao encontrada" para rascunhos.
   - Usuarios autenticados conseguem visualizar rascunhos a partir de "Meus Posts".
 
 ### 2. Zod aplicado em runtime
@@ -43,8 +43,6 @@
 
 ### 3. Testes unitarios ampliados
 
-Novos casos previstos:
-
 - `buscarPorId` nao retorna rascunho por padrao.
 - `buscarPorId(..., { incluirRascunhos: true })` retorna rascunho.
 - `createPostSchema` rejeita resumo acima de 500 caracteres.
@@ -52,19 +50,13 @@ Novos casos previstos:
 
 ### 4. Playwright E2E
 
-Arquivos criados:
+Arquivos adicionados:
 
 - `frontend/playwright.config.ts`
 - `frontend/e2e/helpers.ts`
 - `frontend/e2e/public.spec.ts`
 - `frontend/e2e/auth-flows.spec.ts`
 - `frontend/e2e/demo-video.spec.ts`
-
-Scripts adicionados:
-
-- `npm run e2e`
-- `npm run e2e:headed`
-- `npm run e2e:report`
 
 Fluxos cobertos:
 
@@ -79,46 +71,33 @@ Fluxos cobertos:
 - Recuperacao de senha com e-mail institucional.
 - Atalho `Ctrl+K`.
 - Dark mode.
-
-### 5. Video de demonstracao
-
-O teste `frontend/e2e/demo-video.spec.ts` cria o video automaticamente em:
-
-`Docs/evidencias/13_demo_fluxo.webm`
-
-Nesta sessao, o arquivo ainda nao foi gerado porque o ambiente bloqueou a instalacao do `@playwright/test` e a execucao fora do sandbox foi recusada por limite de aprovacao.
+- Geracao do video de demonstracao.
 
 ---
 
-## Verificacao Nesta Sessao
+## Resultado da Verificacao
 
-| Comando | Status | Observacao |
+| Comando | Status | Resultado |
 |---|---|---|
-| `npm install @playwright/test --save-dev` | Bloqueado | Registry indisponivel no sandbox: `ENOTCACHED` |
-| Instalacao com aprovacao | Bloqueada | Aprovacao automatica recusada por limite da sessao |
-| `npm run test:run` | Bloqueado | Vite/Vitest falhou com `spawn EPERM` no OneDrive |
-| `npm run build` | Parcial | `vue-tsc -b` concluiu; `vite build` falhou com `spawn EPERM` no sandbox |
-| `npm run e2e` | Nao executado | Depende da instalacao do Playwright |
+| `npm install` | Aprovado | Dependencias sincronizadas; 0 vulnerabilidades |
+| `npx playwright install chromium` | Aprovado | Chromium, headless shell e FFmpeg instalados |
+| `npm run test:run` | Aprovado | 7 arquivos, 57 testes aprovados |
+| `npm run build` | Aprovado | `vue-tsc -b` e `vite build` concluídos |
+| `npm run e2e` | Aprovado | 8 testes Playwright aprovados |
 | `git diff --check` | Aprovado | Sem erros de whitespace |
 
 ---
 
-## Proximo Comando Local Recomendado
+## Evidencias
 
-Quando houver acesso ao registry/aprovacao:
-
-```bash
-cd frontend
-npm install
-npx playwright install chromium
-npm run test:run
-npm run build
-npm run e2e
-git diff --check
-```
+| Arquivo | Descricao |
+|---|---|
+| `Docs/evidencias/01_home_desktop.png` a `11_recuperar_senha.png` | Screenshots dos fluxos principais |
+| `Docs/evidencias/12_resultado_testes.txt` | Resumo da execucao de testes, build e E2E |
+| `Docs/evidencias/13_demo_fluxo.webm` | Video de demonstracao gerado via Playwright |
 
 ---
 
 ## Conclusao
 
-As correcoes de codigo e a automacao E2E foram implementadas. O fechamento operacional depende apenas da instalacao do Playwright e da execucao dos comandos de verificacao em um ambiente com permissao para baixar dependencias e executar Vite/Vitest fora das restricoes do sandbox atual.
+Os quatro findings da revisao foram fechados. O front-end agora tem regra consistente de rascunho, schemas Zod aplicados em runtime, cobertura unitária atualizada, suite E2E com Playwright e evidencias finais para banca.

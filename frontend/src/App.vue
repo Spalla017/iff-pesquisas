@@ -53,6 +53,18 @@ import ToastContainer from '@/components/common/ToastContainer.vue'
 const authStore = useAuthStore()
 const router = useRouter()
 
+const focarBuscaDoFeed = (tentativasRestantes = 10) => {
+  const inputBusca = document.getElementById('search-input')
+  if (inputBusca) {
+    inputBusca.focus()
+    return
+  }
+
+  if (tentativasRestantes > 0) {
+    window.setTimeout(() => focarBuscaDoFeed(tentativasRestantes - 1), 80)
+  }
+}
+
 const handleGlobalShortcut = (event: KeyboardEvent) => {
   if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') {
     return
@@ -60,9 +72,7 @@ const handleGlobalShortcut = (event: KeyboardEvent) => {
 
   event.preventDefault()
   router.push('/feed').then(() => {
-    window.setTimeout(() => {
-      document.getElementById('search-input')?.focus()
-    }, 80)
+    focarBuscaDoFeed()
   })
 }
 
