@@ -24,6 +24,7 @@
       <nav class="nav" :class="{ 'nav-open': menuAberto }" id="main-nav">
         <router-link to="/" class="nav-link" @click="fecharMenu" id="nav-home">Início</router-link>
         <router-link to="/feed" class="nav-link" @click="fecharMenu" id="nav-feed">Explorar</router-link>
+        <router-link to="/colaboracoes" class="nav-link" @click="fecharMenu" id="nav-colaboracoes">Colaborações</router-link>
         <button
           type="button"
           class="theme-toggle"

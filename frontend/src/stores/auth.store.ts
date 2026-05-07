@@ -90,6 +90,7 @@ export const useAuthStore = defineStore('auth', () => {
     email,
     matricula: '0000000',
     perfil: 'aluno',
+    curso: 'Sistemas de Informação',
   });
 
   const extrairNomeDev = (email: string) => {

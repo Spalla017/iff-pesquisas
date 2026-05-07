@@ -23,6 +23,7 @@
         <div class="footer-links">
           <span class="footer-links-title">Navegação</span>
           <router-link to="/feed">Explorar pesquisas</router-link>
+          <router-link to="/colaboracoes">Colaborações entre cursos</router-link>
           <router-link to="/criar-post">Publicar projeto</router-link>
           <router-link to="/login">Acessar conta</router-link>
         </div>

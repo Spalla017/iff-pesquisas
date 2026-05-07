@@ -81,6 +81,33 @@
       </div>
     </section>
 
+    <section class="home-section colab-cta-section reveal reveal-delay-2">
+      <div class="colab-cta">
+        <div class="colab-cta__content">
+          <span class="badge">Novo</span>
+          <h2>Colaboração entre Cursos</h2>
+          <p>
+            Seu projeto precisa de conhecimentos de outro curso? Publique uma solicitação de
+            colaboração e conecte-se com alunos de Administração, Mecânica, Automação Industrial e outros cursos do campus.
+          </p>
+          <div class="colab-cta__actions">
+            <router-link to="/colaboracoes" class="btn btn-primary">Explorar colaborações</router-link>
+            <router-link to="/solicitar-colaboracao" class="btn btn-outline">Solicitar ajuda</router-link>
+          </div>
+        </div>
+        <div class="colab-cta__visual">
+          <div class="colab-cta__icon">🤝</div>
+          <div class="colab-cta__courses">
+            <span class="colab-cta__course">SI</span>
+            <span class="colab-cta__arrow">↔</span>
+            <span class="colab-cta__course">ADM</span>
+            <span class="colab-cta__arrow">↔</span>
+            <span class="colab-cta__course">MEC</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section class="home-section area-section reveal reveal-delay-3">
       <div class="section-heading">
         <div>
@@ -403,6 +430,85 @@ onMounted(() => {
   border-radius: var(--radius-md);
 }
 
+/* Collaboration CTA */
+.colab-cta {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 2rem 2.5rem;
+  background: linear-gradient(135deg, rgba(30, 58, 138, 0.06), rgba(170, 59, 255, 0.06));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.colab-cta__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.colab-cta__content h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.colab-cta__content p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.colab-cta__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.colab-cta__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.colab-cta__icon {
+  font-size: 3rem;
+}
+
+.colab-cta__courses {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.colab-cta__course {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text-h);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.colab-cta:hover .colab-cta__course {
+  border-color: var(--primary);
+  transform: scale(1.08);
+}
+
+.colab-cta__arrow {
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -461,6 +567,19 @@ onMounted(() => {
   .section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .colab-cta {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .colab-cta__actions {
+    flex-direction: column;
+  }
+
+  .colab-cta__actions .btn {
+    width: 100%;
   }
 }
 </style>

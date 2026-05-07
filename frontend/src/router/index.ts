@@ -11,6 +11,9 @@ const CreatePostPage = () => import('@/pages/CreatePostPage.vue');
 const MyPostsPage = () => import('@/pages/MyPostsPage.vue');
 const RecoverPasswordPage = () => import('@/pages/RecoverPasswordPage.vue');
 const NotFoundPage = () => import('@/pages/NotFoundPage.vue');
+const ColaboracoesPage = () => import('@/pages/ColaboracoesPage.vue');
+const ColaboracaoDetailPage = () => import('@/pages/ColaboracaoDetailPage.vue');
+const CriarSolicitacaoPage = () => import('@/pages/CriarSolicitacaoPage.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -56,6 +59,22 @@ const routes: RouteRecordRaw[] = [
     path: '/meus-posts',
     name: 'MyPosts',
     component: MyPostsPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/colaboracoes',
+    name: 'Colaboracoes',
+    component: ColaboracoesPage,
+  },
+  {
+    path: '/colaboracoes/:id',
+    name: 'ColaboracaoDetail',
+    component: ColaboracaoDetailPage,
+  },
+  {
+    path: '/solicitar-colaboracao',
+    name: 'CriarSolicitacao',
+    component: CriarSolicitacaoPage,
     meta: { requiresAuth: true },
   },
   {
