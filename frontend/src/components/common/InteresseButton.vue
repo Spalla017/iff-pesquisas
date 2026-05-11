@@ -73,7 +73,7 @@ const toggleInteresse = async () => {
       if (ok) {
         toastStore.notificar('Interesse registrado com sucesso! 🎉', 'success');
       } else {
-        toastStore.notificar('Não foi possível registrar o interesse.', 'error');
+        toastStore.notificar('Não foi possível registrar o interesse.', 'danger');
       }
     }
   } finally {

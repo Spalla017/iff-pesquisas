@@ -303,7 +303,7 @@ const handleSubmit = async () => {
       const campo = issue.path[0] as string;
       if (!erros[campo]) erros[campo] = issue.message;
     });
-    toastStore.notificar(extrairErroZod(validacao) || 'Corrija os erros no formulário.', 'error');
+    toastStore.notificar(extrairErroZod(validacao) || 'Corrija os erros no formulário.', 'danger');
     return;
   }
 
@@ -316,7 +316,7 @@ const handleSubmit = async () => {
     toastStore.notificar('Solicitação publicada com sucesso! 🎉', 'success');
     router.push('/colaboracoes');
   } else {
-    toastStore.notificar(store.erro || 'Erro ao publicar solicitação.', 'error');
+    toastStore.notificar(store.erro || 'Erro ao publicar solicitação.', 'danger');
   }
 };
 </script>

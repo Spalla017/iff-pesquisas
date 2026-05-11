@@ -147,3 +147,41 @@ export interface CreateColaboracaoPayload {
   competenciasNecessarias: string[];
   imagem?: File | null;
 }
+
+// =============================================
+// Chat interno por colaboracao
+// =============================================
+
+/** Mensagem publicada em uma conversa de colaboracao. */
+export interface ChatMensagem {
+  id: string;
+  colaboracaoId: string;
+  autorId: string;
+  autorNome: string;
+  autorPerfil: Usuario['perfil'];
+  conteudo: string;
+  createdAt: Date;
+}
+
+/** Marcador de leitura por usuario em uma colaboracao. */
+export interface ChatLeituraUsuario {
+  colaboracaoId: string;
+  usuarioId: string;
+  lastReadAt: Date;
+}
+
+/** Dados resumidos de uma conversa para a central de mensagens. */
+export interface ChatConversaResumo {
+  colaboracaoId: string;
+  titulo: string;
+  ultimaMensagem?: ChatMensagem;
+  naoLidas: number;
+  participantesAtivos: number;
+}
+
+/** Resultado da avaliacao de permissao de chat para o usuario atual. */
+export interface PermissaoChat {
+  podeLer: boolean;
+  podeEnviar: boolean;
+  motivoBloqueio?: string;
+}

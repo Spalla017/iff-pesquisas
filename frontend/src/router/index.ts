@@ -14,6 +14,7 @@ const NotFoundPage = () => import('@/pages/NotFoundPage.vue');
 const ColaboracoesPage = () => import('@/pages/ColaboracoesPage.vue');
 const ColaboracaoDetailPage = () => import('@/pages/ColaboracaoDetailPage.vue');
 const CriarSolicitacaoPage = () => import('@/pages/CriarSolicitacaoPage.vue');
+const MensagensPage = () => import('@/pages/MensagensPage.vue');
 
 const routes: RouteRecordRaw[] = [
   {
@@ -75,6 +76,12 @@ const routes: RouteRecordRaw[] = [
     path: '/solicitar-colaboracao',
     name: 'CriarSolicitacao',
     component: CriarSolicitacaoPage,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/mensagens',
+    name: 'Mensagens',
+    component: MensagensPage,
     meta: { requiresAuth: true },
   },
   {

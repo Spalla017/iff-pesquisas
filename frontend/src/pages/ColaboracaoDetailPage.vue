@@ -107,6 +107,12 @@
           <InteresseButton :colaboracao-id="colab.id" />
         </section>
 
+        <!-- Chat -->
+        <section class="colab-detail-page__section">
+          <h2 class="colab-detail-page__section-title">Chat da colaboracao</h2>
+          <ColaboracaoChatPanel :colaboracao-id="colab.id" :mostrar-cabecalho="false" />
+        </section>
+
         <!-- Lista de Interessados -->
         <section class="colab-detail-page__section">
           <h2 class="colab-detail-page__section-title">
@@ -149,6 +155,7 @@ import { useColaboracaoStore } from '@/stores/colaboracao.store';
 import { useToastStore } from '@/stores/toast.store';
 import { URGENCIA_LABELS, STATUS_LABELS } from '@/data/mockColaboracoes';
 import InteresseButton from '@/components/common/InteresseButton.vue';
+import ColaboracaoChatPanel from '@/components/common/ColaboracaoChatPanel.vue';
 
 const route = useRoute();
 const router = useRouter();

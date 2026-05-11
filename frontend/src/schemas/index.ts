@@ -95,7 +95,7 @@ export const createColaboracaoSchema = z.object({
     .min(1, 'Selecione uma área de conhecimento.'),
   urgencia: z
     .enum(['baixa', 'media', 'alta'], {
-      errorMap: () => ({ message: 'Selecione o nível de urgência.' }),
+      message: 'Selecione o nível de urgência.',
     }),
   competenciasNecessarias: z
     .array(z.string())
@@ -104,3 +104,17 @@ export const createColaboracaoSchema = z.object({
 });
 
 export type CreateColaboracaoInput = z.infer<typeof createColaboracaoSchema>;
+
+/**
+ * Schema para envio de mensagem no chat de colaboracao.
+ * O conteudo e normalizado com trim e limitado para evitar payloads excessivos.
+ */
+export const chatMensagemSchema = z.object({
+  conteudo: z
+    .string()
+    .trim()
+    .min(1, 'Digite uma mensagem antes de enviar.')
+    .max(1000, 'A mensagem deve ter no maximo 1000 caracteres.'),
+});
+
+export type ChatMensagemInput = z.infer<typeof chatMensagemSchema>;

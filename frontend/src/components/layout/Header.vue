@@ -42,6 +42,10 @@
           </svg>
         </button>
         <template v-if="isAutenticado">
+          <router-link to="/mensagens" class="nav-link nav-link-messages" @click="fecharMenu" id="nav-messages">
+            Mensagens
+            <span v-if="totalNaoLidas > 0" class="messages-badge">{{ totalNaoLidas }}</span>
+          </router-link>
           <router-link to="/criar-post" class="nav-link nav-cta" @click="fecharMenu" id="nav-publish">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
             Publicar
@@ -68,14 +72,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useAuth } from '@/composables/useAuth';
 import { useRouter } from 'vue-router';
+import { useChatStore } from '@/stores/chat.store';
 
 const { isAutenticado, usuario, logout } = useAuth();
 const router = useRouter();
+const chatStore = useChatStore();
 const menuAberto = ref(false);
 const temaEscuro = ref(false);
+const totalNaoLidas = computed(() => chatStore.totalNaoLidas);
 
 const aplicarTema = (escuro: boolean) => {
   temaEscuro.value = escuro;
@@ -195,6 +202,26 @@ onMounted(() => {
 .nav-link.router-link-active:not(.nav-cta) {
   background: var(--primary-light);
   color: var(--primary);
+}
+
+.nav-link-messages {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.messages-badge {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
 }
 
 .theme-toggle {
