@@ -45,28 +45,32 @@ withDefaults(defineProps<Props>(), {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
-  color: #fff;
-  box-shadow: 0 14px 30px rgba(37, 99, 235, 0.25);
+  color: var(--on-primary);
+  box-shadow: 0 14px 30px var(--primary-shadow);
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 18px 34px rgba(37, 99, 235, 0.35);
+  box-shadow: 0 18px 34px var(--primary-shadow-strong);
 }
 
 .btn-secondary {
-  background: #0f172a;
-  color: #fff;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-xs);
 }
 
 .btn-secondary:hover:not(:disabled) {
   transform: translateY(-2px);
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, var(--danger) 0%, #f97316 100%);
-  color: #fff;
+  background: var(--danger);
+  color: var(--on-danger);
 }
 
 .btn-danger:hover:not(:disabled) {

@@ -24,7 +24,8 @@
           <span class="footer-links-title">Navegação</span>
           <router-link to="/feed">Explorar pesquisas</router-link>
           <router-link to="/colaboracoes">Colaborações entre cursos</router-link>
-          <router-link to="/criar-post">Publicar projeto</router-link>
+          <router-link to="/como-funciona">Como funciona</router-link>
+          <router-link to="/criar-post">Publicar pesquisa</router-link>
           <router-link to="/login">Acessar conta</router-link>
         </div>
         <div class="footer-info">
@@ -106,8 +107,8 @@ onBeforeUnmount(() => {
 
 /* Footer */
 .footer {
-  background: #0c1527;
-  color: rgba(255, 255, 255, 0.85);
+  background: var(--footer-bg);
+  color: var(--footer-text);
   margin-top: var(--spacing-3xl);
 }
 
@@ -126,7 +127,7 @@ onBeforeUnmount(() => {
 
 .footer-mark {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
+  color: var(--on-primary);
   padding: 0.35rem 0.6rem;
   border-radius: 10px;
   font-size: 0.78rem;
@@ -141,7 +142,7 @@ onBeforeUnmount(() => {
 }
 
 .footer-desc {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--footer-muted);
   font-size: 0.82rem;
   margin: 0.3rem 0 0;
   max-width: 280px;
@@ -160,36 +161,36 @@ onBeforeUnmount(() => {
   font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--footer-subtle);
   margin-bottom: 0.3rem;
 }
 
 .footer-links a {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--footer-muted);
   font-size: 0.88rem;
   font-weight: 500;
   transition: color var(--transition-fast);
 }
 
 .footer-links a:hover {
-  color: #fff;
+  color: var(--footer-text);
 }
 
 .footer-info span {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--footer-muted);
 }
 
 .footer-pill {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.5);
+  background: var(--footer-border);
+  color: var(--footer-muted);
   margin-top: 0.3rem;
   width: fit-content;
 }
 
 /* Footer Bottom */
 .footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--footer-border);
 }
 
 .footer-bottom-inner {
@@ -198,7 +199,7 @@ onBeforeUnmount(() => {
   align-items: center;
   padding: 1.2rem 0;
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--footer-subtle);
   gap: 1rem;
   flex-wrap: wrap;
 }

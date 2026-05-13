@@ -17,7 +17,7 @@
             <strong>Gestão de publicações</strong>
           </div>
         </div>
-        <h1>Meus posts</h1>
+        <h1>Minhas publicações</h1>
         <p>Gerencie suas pesquisas publicadas, edite conteúdo e acompanhe o status.</p>
       </div>
       <div class="header-panel">
@@ -41,7 +41,7 @@
     <!-- Loading -->
     <div v-if="carregando" class="loading-container">
       <div class="loading-spinner"></div>
-      <p class="muted">Carregando seus posts...</p>
+      <p class="muted">Carregando suas publicações...</p>
     </div>
 
     <!-- Empty State -->
@@ -208,7 +208,7 @@ const handleToggleStatus = (id: string, statusAtual: string) => {
   gap: 1.5rem;
   padding: 1.5rem;
   background:
-    linear-gradient(135deg, rgba(18, 71, 52, 0.08), rgba(15, 118, 110, 0.04)),
+    linear-gradient(135deg, var(--primary-light), var(--surface-2)),
     var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -228,8 +228,8 @@ const handleToggleStatus = (id: string, statusAtual: string) => {
   gap: 0.75rem;
   width: fit-content;
   padding: 0.45rem 0.7rem 0.45rem 0.45rem;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.76);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-xs);
 }
@@ -295,7 +295,7 @@ const handleToggleStatus = (id: string, statusAtual: string) => {
   place-items: center;
   min-height: 74px;
   padding: 0.75rem;
-  background: rgba(255, 255, 255, 0.76);
+  background: var(--surface-glass-strong);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   text-align: center;
@@ -375,7 +375,7 @@ const handleToggleStatus = (id: string, statusAtual: string) => {
 }
 
 .pill-area {
-  background: rgba(28, 47, 99, 0.10);
+  background: var(--primary-light);
   color: var(--primary);
 }
 
@@ -423,7 +423,7 @@ const handleToggleStatus = (id: string, statusAtual: string) => {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--overlay);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;

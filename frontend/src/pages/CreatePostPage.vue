@@ -21,14 +21,26 @@
     </div>
 
     <!-- Error Alert -->
-    <div v-if="erroPublicacao" class="alert alert-danger scale-in">
+    <div v-if="erroPublicacao" class="alert alert-danger scale-in" role="alert" aria-live="assertive">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       {{ erroPublicacao }}
     </div>
 
     <div class="create-grid reveal reveal-delay-1">
       <!-- Form -->
-      <form @submit.prevent="handleSubmit" class="form-card card" id="create-post-form">
+      <form @submit.prevent="handleSubmit" class="form-card card" id="create-post-form" novalidate>
+        <div v-if="errosResumo.length" class="form-error-summary" role="alert" aria-live="assertive">
+          <h2>Revise os campos antes de publicar</h2>
+          <p>Encontramos informações que precisam ser corrigidas:</p>
+          <ul>
+            <li v-for="item in errosResumo" :key="item.campo">
+              <button type="button" class="form-error-summary__link" @click="focarCampoErro(item.campo)">
+                {{ item.mensagem }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
         <!-- Título -->
         <div class="form-group">
           <label class="form-label" for="titulo">
@@ -39,11 +51,14 @@
             v-model="form.titulo"
             type="text"
             class="form-input"
-            required
+            :class="{ 'form-input--erro': erros.titulo }"
             placeholder="Ex: Impacto da IoT na agricultura familiar"
             maxlength="200"
+            :aria-invalid="!!erros.titulo"
+            :aria-describedby="erros.titulo ? 'titulo-erro titulo-hint' : 'titulo-hint'"
           />
-          <span class="form-hint">{{ form.titulo.length }}/200 caracteres</span>
+          <span v-if="erros.titulo" id="titulo-erro" class="form-error">{{ erros.titulo }}</span>
+          <span id="titulo-hint" class="form-hint">{{ form.titulo.length }}/200 caracteres</span>
         </div>
 
         <!-- Resumo -->
@@ -55,12 +70,15 @@
             id="resumo"
             v-model="form.resumo"
             class="form-textarea"
-            required
+            :class="{ 'form-input--erro': erros.resumo }"
             placeholder="Descreva brevemente o objetivo, metodologia e resultados da pesquisa..."
             maxlength="500"
             rows="5"
+            :aria-invalid="!!erros.resumo"
+            :aria-describedby="erros.resumo ? 'resumo-erro resumo-hint' : 'resumo-hint'"
           ></textarea>
-          <span class="form-hint">{{ form.resumo.length }}/500 caracteres</span>
+          <span v-if="erros.resumo" id="resumo-erro" class="form-error">{{ erros.resumo }}</span>
+          <span id="resumo-hint" class="form-hint">{{ form.resumo.length }}/500 caracteres</span>
         </div>
 
         <!-- Área e Orientador -->
@@ -69,10 +87,18 @@
             <label class="form-label" for="area">
               Área de conhecimento <span class="required">*</span>
             </label>
-            <select id="area" v-model="form.area" class="form-select" required>
+            <select
+              id="area"
+              v-model="form.area"
+              class="form-select"
+              :class="{ 'form-input--erro': erros.area }"
+              :aria-invalid="!!erros.area"
+              :aria-describedby="erros.area ? 'area-erro' : undefined"
+            >
               <option value="">Selecione uma área</option>
               <option v-for="area in areas" :key="area" :value="area">{{ area }}</option>
             </select>
+            <span v-if="erros.area" id="area-erro" class="form-error">{{ erros.area }}</span>
           </div>
           <div class="form-group">
             <label class="form-label" for="orientador">
@@ -83,9 +109,12 @@
               v-model="form.orientador"
               type="text"
               class="form-input"
-              required
+              :class="{ 'form-input--erro': erros.orientador }"
               placeholder="Prof. Dr. Nome Completo"
+              :aria-invalid="!!erros.orientador"
+              :aria-describedby="erros.orientador ? 'orientador-erro' : undefined"
             />
+            <span v-if="erros.orientador" id="orientador-erro" class="form-error">{{ erros.orientador }}</span>
           </div>
         </div>
 
@@ -105,10 +134,13 @@
               type="text"
               class="form-input"
               placeholder="Digite e pressione Enter..."
+              aria-describedby="palavras-chave-hint palavras-chave-aviso"
+              @input="palavraChaveAviso = ''"
               @keydown.enter.prevent="adicionarPalavraChave"
             />
           </div>
-          <span class="form-hint">Pressione Enter para adicionar (máx. 5)</span>
+          <span id="palavras-chave-hint" class="form-hint">Pressione Enter para adicionar (máx. 5)</span>
+          <span v-if="palavraChaveAviso" id="palavras-chave-aviso" class="form-error" aria-live="polite">{{ palavraChaveAviso }}</span>
         </div>
 
         <!-- Upload PDF -->
@@ -116,7 +148,7 @@
           <label class="form-label">Arquivo PDF</label>
           <div
             class="upload-zone"
-            :class="{ 'upload-active': isDraggingPdf, 'upload-filled': form.pdf }"
+            :class="{ 'upload-active': isDraggingPdf, 'upload-filled': form.pdf, 'form-input--erro': erros.pdf }"
             @dragover.prevent="isDraggingPdf = true"
             @dragleave="isDraggingPdf = false"
             @drop.prevent="handlePdfDrop"
@@ -128,6 +160,8 @@
               @change="handlePdfSelect"
               class="upload-input"
               id="pdf-input"
+              :aria-invalid="!!erros.pdf"
+              :aria-describedby="erros.pdf ? 'pdf-erro pdf-hint' : 'pdf-hint'"
             />
             <div v-if="!form.pdf" class="upload-placeholder">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
@@ -137,7 +171,7 @@
                 <polyline points="9,15 12,12 15,15"/>
               </svg>
               <span>Arraste o PDF aqui ou <strong>clique para selecionar</strong></span>
-              <span class="form-hint">Máximo 50MB</span>
+              <span id="pdf-hint" class="form-hint">Máximo 50MB</span>
             </div>
             <div v-else class="upload-preview">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -153,6 +187,7 @@
               </button>
             </div>
           </div>
+          <span v-if="erros.pdf" id="pdf-erro" class="form-error">{{ erros.pdf }}</span>
         </div>
 
         <!-- Upload Imagem -->
@@ -160,7 +195,7 @@
           <label class="form-label">Imagem de capa</label>
           <div
             class="upload-zone"
-            :class="{ 'upload-active': isDraggingImg, 'upload-filled': imagemPreviewUrl }"
+            :class="{ 'upload-active': isDraggingImg, 'upload-filled': imagemPreviewUrl, 'form-input--erro': erros.imagem }"
             @dragover.prevent="isDraggingImg = true"
             @dragleave="isDraggingImg = false"
             @drop.prevent="handleImageDrop"
@@ -172,6 +207,8 @@
               @change="handleImageSelect"
               class="upload-input"
               id="img-input"
+              :aria-invalid="!!erros.imagem"
+              :aria-describedby="erros.imagem ? 'imagem-erro imagem-hint' : 'imagem-hint'"
             />
             <div v-if="!imagemPreviewUrl" class="upload-placeholder">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
@@ -180,7 +217,7 @@
                 <polyline points="21,15 16,10 5,21"/>
               </svg>
               <span>Arraste uma imagem ou <strong>clique para selecionar</strong></span>
-              <span class="form-hint">Recomendado: 800×500px · JPEG ou PNG</span>
+              <span id="imagem-hint" class="form-hint">Recomendado: 800×500px · JPEG ou PNG, até 5MB</span>
             </div>
             <div v-else class="upload-preview">
               <img :src="imagemPreviewUrl" alt="Preview" class="img-preview" />
@@ -193,6 +230,7 @@
               </button>
             </div>
           </div>
+          <span v-if="erros.imagem" id="imagem-erro" class="form-error">{{ erros.imagem }}</span>
         </div>
 
         <!-- Upload Progress -->
@@ -208,7 +246,7 @@
 
         <!-- Actions -->
         <div class="form-actions">
-          <button type="submit" :disabled="enviando || !formValido" class="btn btn-primary btn-lg" id="btn-publish">
+          <button type="submit" :disabled="enviando" class="btn btn-primary btn-lg" id="btn-publish" :aria-busy="enviando">
             <svg v-if="!enviando" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
             <span v-if="enviando" class="btn-spinner"></span>
             {{ textoBotaoSubmit }}
@@ -233,7 +271,7 @@
             </li>
             <li>
               <strong>Imagem de destaque</strong>
-              <span>Posts com imagem recebem mais visualizações.</span>
+              <span>Publicações com imagem ajudam a contextualizar a pesquisa.</span>
             </li>
             <li>
               <strong>Revise antes</strong>
@@ -273,7 +311,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router';
 import { usePesquisaStore } from '@/stores/pesquisa.store';
 import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
@@ -289,11 +327,22 @@ const publicadoComSucesso = ref(false);
 const erroPublicacao = ref('');
 const progressoUpload = ref(0);
 const novaPalavraChave = ref('');
+const palavraChaveAviso = ref('');
 const isDraggingPdf = ref(false);
 const isDraggingImg = ref(false);
 const imagemPreviewUrl = ref('');
 const imagemRemovida = ref(false);
 const snapshotInicial = ref('');
+const erros = ref<Record<string, string>>({});
+const camposErro: Record<string, { id: string; label: string }> = {
+  titulo: { id: 'titulo', label: 'Título da pesquisa' },
+  resumo: { id: 'resumo', label: 'Resumo' },
+  area: { id: 'area', label: 'Área de conhecimento' },
+  orientador: { id: 'orientador', label: 'Orientador' },
+  pdf: { id: 'pdf-input', label: 'Arquivo PDF' },
+  imagem: { id: 'img-input', label: 'Imagem de capa' },
+};
+const ordemCamposErro = Object.keys(camposErro);
 
 const form = ref({
   titulo: '',
@@ -305,11 +354,14 @@ const form = ref({
   imagem: null as File | null,
 });
 
-const formValido = computed(() =>
-  form.value.titulo.trim() !== '' &&
-  form.value.resumo.trim() !== '' &&
-  form.value.area !== '' &&
-  form.value.orientador.trim() !== ''
+const errosResumo = computed(() =>
+  ordemCamposErro
+    .filter(campo => erros.value[campo])
+    .map(campo => ({
+      campo,
+      label: camposErro[campo].label,
+      mensagem: erros.value[campo],
+    })),
 );
 const serializarForm = () => JSON.stringify({
   titulo: form.value.titulo,
@@ -343,17 +395,34 @@ const textoBotaoSubmit = computed(() => {
   return isEdicao.value ? 'Salvar alterações' : 'Publicar pesquisa';
 });
 
+watch(() => form.value.titulo, () => { delete erros.value.titulo; });
+watch(() => form.value.resumo, () => { delete erros.value.resumo; });
+watch(() => form.value.area, () => { delete erros.value.area; });
+watch(() => form.value.orientador, () => { delete erros.value.orientador; });
+
 // Keywords
 const adicionarPalavraChave = () => {
   const kw = novaPalavraChave.value.trim();
+  palavraChaveAviso.value = '';
   const jaExiste = form.value.palavrasChave.some(
     palavra => palavra.toLocaleLowerCase('pt-BR') === kw.toLocaleLowerCase('pt-BR'),
   );
 
-  if (kw && form.value.palavrasChave.length < 5 && !jaExiste) {
-    form.value.palavrasChave.push(kw);
+  if (!kw) {
+    return;
   }
 
+  if (form.value.palavrasChave.length >= 5) {
+    palavraChaveAviso.value = 'Informe no máximo 5 palavras-chave.';
+    return;
+  }
+
+  if (jaExiste) {
+    palavraChaveAviso.value = 'Esta palavra-chave já foi adicionada.';
+    return;
+  }
+
+  form.value.palavrasChave.push(kw);
   novaPalavraChave.value = '';
 };
 
@@ -365,7 +434,8 @@ const removerPalavraChave = (idx: number) => {
 const handlePdfSelect = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files?.[0]) {
-    setPdf(input.files[0]);
+    const pdfAceito = setPdf(input.files[0]);
+    if (!pdfAceito) input.value = '';
   }
 };
 
@@ -377,40 +447,53 @@ const handlePdfDrop = (event: DragEvent) => {
   }
 };
 
-const setPdf = (file: File) => {
+const setPdf = (file: File): boolean => {
   if (file.type !== 'application/pdf') {
-    erroPublicacao.value = 'Selecione um arquivo no formato PDF.';
-    return;
+    erros.value.pdf = 'O arquivo deve estar em formato PDF.';
+    erroPublicacao.value = erros.value.pdf;
+    return false;
   }
 
   if (file.size > 50 * 1024 * 1024) {
-    erroPublicacao.value = 'O arquivo PDF deve ter no máximo 50MB.';
-    return;
+    erros.value.pdf = 'O arquivo PDF deve ter no máximo 50MB.';
+    erroPublicacao.value = erros.value.pdf;
+    return false;
   }
 
   form.value.pdf = file;
   erroPublicacao.value = '';
+  delete erros.value.pdf;
+  return true;
 };
 
 const handleImageSelect = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files?.[0]) {
-    setImagem(input.files[0]);
+    const imagemAceita = setImagem(input.files[0]);
+    if (!imagemAceita) input.value = '';
   }
 };
 
 const handleImageDrop = (event: DragEvent) => {
   isDraggingImg.value = false;
   const file = event.dataTransfer?.files[0];
-  if (file && file.type.startsWith('image/')) {
+  if (file) {
     setImagem(file);
   }
 };
 
-const setImagem = (file: File) => {
-  if (!file.type.startsWith('image/')) {
-    erroPublicacao.value = 'Selecione uma imagem válida.';
-    return;
+const setImagem = (file: File): boolean => {
+  const tiposAceitos = ['image/jpeg', 'image/png'];
+  if (!tiposAceitos.includes(file.type)) {
+    erros.value.imagem = 'A imagem deve estar em formato JPEG ou PNG.';
+    erroPublicacao.value = erros.value.imagem;
+    return false;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    erros.value.imagem = 'A imagem deve ter no máximo 5MB.';
+    erroPublicacao.value = erros.value.imagem;
+    return false;
   }
 
   if (imagemPreviewUrl.value.startsWith('blob:')) {
@@ -421,6 +504,8 @@ const setImagem = (file: File) => {
   imagemPreviewUrl.value = URL.createObjectURL(file);
   imagemRemovida.value = false;
   erroPublicacao.value = '';
+  delete erros.value.imagem;
+  return true;
 };
 
 const removerImagem = () => {
@@ -430,6 +515,7 @@ const removerImagem = () => {
   form.value.imagem = null;
   imagemPreviewUrl.value = '';
   imagemRemovida.value = true;
+  delete erros.value.imagem;
 };
 
 const formatFileSize = (bytes: number) => {
@@ -440,7 +526,7 @@ const formatFileSize = (bytes: number) => {
 
 // Submit
 const handleSubmit = async () => {
-  if (!formValido.value) return;
+  erros.value = {};
 
   const dadosValidados = createPostSchema.safeParse({
     titulo: form.value.titulo.trim(),
@@ -451,7 +537,12 @@ const handleSubmit = async () => {
   });
 
   if (!dadosValidados.success) {
-    erroPublicacao.value = extrairErroZod(dadosValidados) ?? 'Dados inválidos.';
+    dadosValidados.error.issues.forEach(issue => {
+      const campo = issue.path[0] as string;
+      if (!erros.value[campo]) erros.value[campo] = issue.message;
+    });
+    erroPublicacao.value = extrairErroZod(dadosValidados) ?? 'Corrija os campos destacados.';
+    focarPrimeiroCampoComErro();
     return;
   }
 
@@ -499,6 +590,23 @@ const handleSubmit = async () => {
   } finally {
     enviando.value = false;
   }
+};
+
+const focarCampoErro = (campo: string) => {
+  const id = camposErro[campo]?.id;
+  if (!id) return;
+
+  const elemento = document.getElementById(id);
+  if (elemento) {
+    elemento.focus();
+    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
+
+const focarPrimeiroCampoComErro = () => {
+  const primeiroCampo = errosResumo.value[0]?.campo;
+  if (!primeiroCampo) return;
+  window.requestAnimationFrame(() => focarCampoErro(primeiroCampo));
 };
 
 const handleBeforeUnload = (event: BeforeUnloadEvent) => {
@@ -590,6 +698,45 @@ onBeforeUnmount(() => {
   gap: 1.3rem;
 }
 
+.form-error-summary {
+  padding: 1rem;
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-md);
+  background: var(--danger-light);
+}
+
+.form-error-summary h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.form-error-summary p {
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.form-error-summary ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.form-error-summary__link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.form-error-summary__link:hover,
+.form-error-summary__link:focus {
+  text-decoration: underline;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -598,6 +745,16 @@ onBeforeUnmount(() => {
 
 .required {
   color: var(--danger);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.form-input--erro {
+  border-color: var(--danger) !important;
 }
 
 /* Keywords Input */
@@ -657,7 +814,7 @@ onBeforeUnmount(() => {
 
 .upload-active {
   border-color: var(--primary);
-  background: rgba(28, 47, 99, 0.06);
+  background: var(--primary-light);
   transform: scale(1.01);
 }
 

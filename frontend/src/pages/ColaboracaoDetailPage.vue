@@ -96,7 +96,7 @@
               <option value="cancelada">Cancelada</option>
             </select>
             <button class="colab-detail-page__btn-danger" @click="confirmarExclusao">
-              🗑️ Excluir Solicitação
+              Excluir solicitação
             </button>
           </div>
         </section>
@@ -107,38 +107,39 @@
           <InteresseButton :colaboracao-id="colab.id" />
         </section>
 
-        <!-- Lista de Interessados -->
-        <section class="colab-detail-page__section">
-          <h2 class="colab-detail-page__section-title">
-            👥 Interessados
-            <span class="colab-detail-page__count">({{ colab.interessados.length }})</span>
-          </h2>
-
-          <div v-if="colab.interessados.length === 0" class="colab-detail-page__empty-int">
-            <p>Nenhum interessado ainda. Seja o primeiro!</p>
-          </div>
-
-          <div v-else class="colab-detail-page__interessados-list">
-            <div
-              v-for="interesse in colab.interessados"
-              :key="interesse.id"
-              class="colab-detail-page__interessado"
-            >
-              <div class="colab-detail-page__interessado-avatar">
-                {{ interesse.usuarioNome.charAt(0) }}
-              </div>
-              <div class="colab-detail-page__interessado-info">
-                <strong>{{ interesse.usuarioNome }}</strong>
-                <span class="colab-detail-page__interessado-curso">{{ interesse.usuarioCurso }}</span>
-              </div>
-              <span class="colab-detail-page__interessado-data">
-                {{ formatarData(interesse.dataInteresse) }}
-              </span>
-            </div>
-          </div>
-        </section>
       </div>
     </template>
+
+    <Teleport to="body">
+      <div
+        v-if="showDeleteModal"
+        class="modal-overlay"
+        role="presentation"
+        @click.self="fecharModalExclusao"
+      >
+        <div
+          class="modal-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-colab-title"
+          aria-describedby="delete-colab-desc"
+        >
+          <div class="modal-icon" aria-hidden="true">!</div>
+          <h2 id="delete-colab-title">Excluir solicitação de colaboração?</h2>
+          <p id="delete-colab-desc">
+            Esta ação remove a solicitação e a lista de interessados. Ela não pode ser desfeita.
+          </p>
+          <div class="modal-actions">
+            <button type="button" class="modal-btn modal-btn--danger" id="btn-confirm-delete-colab" @click="excluirColaboracao">
+              Sim, excluir
+            </button>
+            <button type="button" class="modal-btn modal-btn--outline" id="btn-cancel-delete-colab" @click="fecharModalExclusao">
+              Cancelar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -162,6 +163,7 @@ const isAutor = computed(() => {
 });
 
 const novoStatus = ref('');
+const showDeleteModal = ref(false);
 
 const urgenciaInfo = computed(() => {
   if (!colab.value) return URGENCIA_LABELS.baixa;
@@ -205,12 +207,23 @@ const alterarStatus = () => {
 
 const confirmarExclusao = async () => {
   if (!colab.value) return;
-  if (!window.confirm('Tem certeza que deseja excluir esta solicitação?')) return;
+  showDeleteModal.value = true;
+};
+
+const fecharModalExclusao = () => {
+  showDeleteModal.value = false;
+};
+
+const excluirColaboracao = async () => {
+  if (!colab.value) return;
 
   const ok = await store.deletarColaboracao(colab.value.id);
   if (ok) {
-    toastStore.notificar('Solicitação excluída.', 'info');
+    showDeleteModal.value = false;
+    toastStore.notificar('Solicitação de colaboração excluída.', 'info');
     router.push('/colaboracoes');
+  } else {
+    toastStore.notificar(store.erro || 'Não foi possível excluir a solicitação. Tente novamente.', 'danger');
   }
 };
 
@@ -282,7 +295,7 @@ watch(() => route.params.id, carregarDados);
 .colab-detail-page__urgencia {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   text-transform: uppercase;
@@ -298,10 +311,10 @@ watch(() => route.params.id, carregarDados);
 }
 
 .colab-detail-page__title {
-  font-family: var(--heading);
+  font-family: var(--font-display);
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text);
   margin: 0 0 1rem;
   letter-spacing: -0.4px;
   line-height: 1.3;
@@ -319,7 +332,7 @@ watch(() => route.params.id, carregarDados);
 }
 
 .colab-detail-page__meta-item strong {
-  color: var(--text-h);
+  color: var(--text);
 }
 
 /* Content */
@@ -351,17 +364,11 @@ watch(() => route.params.id, carregarDados);
 }
 
 .colab-detail-page__section-title {
-  font-family: var(--heading);
+  font-family: var(--font-display);
   font-size: 1.1rem;
   font-weight: 600;
-  color: var(--text-h);
-  margin: 0 0 0.75rem;
-}
-
-.colab-detail-page__count {
-  font-weight: 400;
   color: var(--text);
-  font-size: 0.9rem;
+  margin: 0 0 0.75rem;
 }
 
 .colab-detail-page__descricao {
@@ -384,9 +391,9 @@ watch(() => route.params.id, carregarDados);
   border-radius: 25px;
   font-size: 0.88rem;
   font-weight: 600;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
 }
 
 /* Competências */
@@ -400,15 +407,15 @@ watch(() => route.params.id, carregarDados);
   padding: 0.3rem 0.75rem;
   border-radius: 8px;
   font-size: 0.82rem;
-  background: var(--code-bg);
-  color: var(--text-h);
+  background: var(--surface-2);
+  color: var(--text);
   font-weight: 500;
 }
 
 /* Author Actions */
 .colab-detail-page__author-actions {
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
+  background: var(--accent-light);
+  border: 1px solid var(--border-strong);
   border-radius: 12px;
   padding: 1.25rem !important;
 }
@@ -426,96 +433,115 @@ watch(() => route.params.id, carregarDados);
   border-radius: 8px;
   font-size: 0.85rem;
   background: var(--bg);
-  color: var(--text-h);
+  color: var(--text);
   cursor: pointer;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .colab-detail-page__btn-danger {
   padding: 0.5rem 1rem;
-  border: 1px solid #ef4444;
+  border: 1px solid var(--danger);
   border-radius: 8px;
   background: transparent;
-  color: #ef4444;
+  color: var(--danger);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .colab-detail-page__btn-danger:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: var(--danger-light);
 }
 
 /* Interesse Section */
 .colab-detail-page__interesse-section {
-  background: linear-gradient(135deg, var(--accent-bg), rgba(59, 130, 246, 0.05));
-  border: 1px solid var(--accent-border);
+  background: linear-gradient(135deg, var(--accent-light), var(--primary-light));
+  border: 1px solid var(--border-strong);
   border-radius: 12px;
   padding: 1.25rem !important;
 }
 
-/* Interessados */
-.colab-detail-page__empty-int {
-  color: var(--text);
-  font-size: 0.88rem;
-  opacity: 0.6;
-}
-
-.colab-detail-page__interessados-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.colab-detail-page__interessado {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  padding: 0.65rem 0.85rem;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg);
-}
-
-.colab-detail-page__interessado-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  flex-shrink: 0;
+  padding: 1rem;
+  background: var(--overlay);
+  backdrop-filter: blur(4px);
 }
 
-.colab-detail-page__interessado-info {
-  flex: 1;
+.modal-card {
+  width: min(100%, 430px);
+  padding: 1.6rem;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+
+.modal-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 0.8rem;
+  border-radius: 50%;
+  background: var(--danger-light);
+  color: var(--danger);
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.modal-card h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+}
+
+.modal-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.modal-actions {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
 }
 
-.colab-detail-page__interessado-info strong {
-  font-size: 0.88rem;
-  color: var(--text-h);
+.modal-btn {
+  min-height: 42px;
+  padding: 0.65rem 1.1rem;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.colab-detail-page__interessado-curso {
-  font-size: 0.78rem;
+.modal-btn--danger {
+  border: 1px solid var(--danger);
+  background: var(--danger);
+  color: var(--on-danger);
+}
+
+.modal-btn--outline {
+  border: 1px solid var(--border);
+  background: var(--surface);
   color: var(--text);
-  opacity: 0.7;
 }
 
-.colab-detail-page__interessado-data {
-  font-size: 0.75rem;
-  color: var(--text);
-  opacity: 0.5;
-  white-space: nowrap;
+.modal-btn--outline:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
 }
 
 @keyframes spin {
@@ -533,3 +559,4 @@ watch(() => route.params.id, carregarDados);
   }
 }
 </style>
+

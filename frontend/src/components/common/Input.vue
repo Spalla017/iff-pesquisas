@@ -45,23 +45,24 @@ defineEmits<{
 .label {
   font-weight: 600;
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 .input {
   padding: 0.75rem 0.9rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--surface);
+  color: var(--text);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .input:focus {
   outline: none;
-  border-color: rgba(37, 99, 235, 0.6);
-  box-shadow: 0 0 0 4px var(--ring);
-  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+  background: var(--surface);
 }
 
 .input:disabled {

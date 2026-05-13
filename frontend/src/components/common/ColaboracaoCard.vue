@@ -1,73 +1,77 @@
-<template>
-  <article class="colab-card" :class="[`urgencia-${colaboracao.urgencia}`, `status-${colaboracao.status}`]">
-    <div class="colab-card__header">
-      <span class="colab-card__urgencia" :style="{ background: urgenciaInfo.cor }">
-        {{ urgenciaIcon }} {{ urgenciaInfo.label }}
-      </span>
-      <span class="colab-card__status" :style="{ color: statusInfo.cor }">
-        {{ statusInfo.label }}
-      </span>
-    </div>
-
-    <div v-if="colaboracao.imagemUrl" class="colab-card__img-wrap">
-      <img :src="colaboracao.imagemUrl" :alt="colaboracao.titulo" class="colab-card__img" loading="lazy" />
-    </div>
-
-    <div class="colab-card__body">
-      <h3 class="colab-card__titulo">{{ colaboracao.titulo }}</h3>
-
-      <p class="colab-card__descricao">{{ descricaoResumida }}</p>
-
-      <div class="colab-card__origem">
-        <span class="colab-card__label">Publicado por:</span>
-        <span class="colab-card__curso-badge colab-card__curso-badge--origem">{{ colaboracao.cursoOrigem }}</span>
+﻿<template>
+  <router-link
+    :to="`/colaboracoes/${colaboracao.id}`"
+    class="colab-card-link"
+    :aria-label="`Abrir detalhes de ${colaboracao.titulo}`"
+  >
+    <article class="colab-card" :class="[`urgencia-${colaboracao.urgencia}`, `status-${colaboracao.status}`]">
+      <div class="colab-card__header">
+        <span class="colab-card__urgencia" :style="{ background: urgenciaInfo.cor }">
+          {{ urgenciaInfo.label }}
+        </span>
+        <span class="colab-card__status" :style="{ color: statusInfo.cor }">
+          {{ statusInfo.label }}
+        </span>
       </div>
 
-      <div class="colab-card__destino">
-        <span class="colab-card__label">Precisa de:</span>
-        <div class="colab-card__cursos-list">
+      <div v-if="colaboracao.imagemUrl" class="colab-card__img-wrap">
+        <img :src="colaboracao.imagemUrl" :alt="colaboracao.titulo" class="colab-card__img" loading="lazy" />
+      </div>
+
+      <div class="colab-card__body">
+        <h3 class="colab-card__titulo">{{ colaboracao.titulo }}</h3>
+
+        <p class="colab-card__descricao">{{ descricaoResumida }}</p>
+
+        <div class="colab-card__origem">
+          <span class="colab-card__label">Publicado por:</span>
+          <span class="colab-card__curso-badge colab-card__curso-badge--origem">{{ colaboracao.cursoOrigem }}</span>
+        </div>
+
+        <div class="colab-card__destino">
+          <span class="colab-card__label">Precisa de:</span>
+          <div class="colab-card__cursos-list">
+            <span
+              v-for="curso in colaboracao.cursosDesejados"
+              :key="curso"
+              class="colab-card__curso-badge colab-card__curso-badge--destino"
+            >
+              {{ curso }}
+            </span>
+          </div>
+        </div>
+
+        <div v-if="colaboracao.competenciasNecessarias.length > 0" class="colab-card__competencias">
           <span
-            v-for="curso in colaboracao.cursosDesejados"
-            :key="curso"
-            class="colab-card__curso-badge colab-card__curso-badge--destino"
+            v-for="comp in competenciasVisiveis"
+            :key="comp"
+            class="colab-card__tag"
           >
-            {{ curso }}
+            {{ comp }}
+          </span>
+          <span v-if="competenciasExtras > 0" class="colab-card__tag colab-card__tag--extra">
+            +{{ competenciasExtras }}
           </span>
         </div>
       </div>
 
-      <div v-if="colaboracao.competenciasNecessarias.length > 0" class="colab-card__competencias">
-        <span
-          v-for="comp in competenciasVisiveis"
-          :key="comp"
-          class="colab-card__tag"
-        >
-          {{ comp }}
-        </span>
-        <span v-if="competenciasExtras > 0" class="colab-card__tag colab-card__tag--extra">
-          +{{ competenciasExtras }}
-        </span>
+      <div class="colab-card__footer">
+        <div class="colab-card__meta">
+          <span class="colab-card__autor">{{ colaboracao.autor }}</span>
+          <span class="colab-card__interessados" :title="`${colaboracao.interessados.length} interessado(s)`">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            {{ colaboracao.interessados.length }}
+          </span>
+        </div>
+        <span class="colab-card__link">Ver detalhes -></span>
       </div>
-    </div>
-
-    <div class="colab-card__footer">
-      <div class="colab-card__meta">
-        <span class="colab-card__autor">{{ colaboracao.autor }}</span>
-        <span class="colab-card__interessados" :title="`${colaboracao.interessados.length} interessado(s)`">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-          </svg>
-          {{ colaboracao.interessados.length }}
-        </span>
-      </div>
-      <router-link :to="`/colaboracoes/${colaboracao.id}`" class="colab-card__link">
-        Ver detalhes →
-      </router-link>
-    </div>
-  </article>
+    </article>
+  </router-link>
 </template>
 
 <script setup lang="ts">
@@ -98,17 +102,25 @@ const competenciasExtras = computed(() =>
 const urgenciaInfo = computed(() => URGENCIA_LABELS[props.colaboracao.urgencia] || URGENCIA_LABELS.baixa);
 const statusInfo = computed(() => STATUS_LABELS[props.colaboracao.status] || STATUS_LABELS.aberta);
 
-const urgenciaIcon = computed(() => {
-  const icons: Record<string, string> = { baixa: '🟢', media: '🟡', alta: '🔴' };
-  return icons[props.colaboracao.urgencia] || '🟢';
-});
 </script>
 
 <style scoped>
+.colab-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--radius-md);
+}
+
+.colab-card-link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
 .colab-card {
-  background: var(--bg);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -118,7 +130,7 @@ const urgenciaIcon = computed(() => {
 
 .colab-card:hover {
   transform: translateY(-4px);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-md);
 }
 
 .colab-card__header {
@@ -133,7 +145,7 @@ const urgenciaIcon = computed(() => {
 .colab-card__urgencia {
   font-size: 0.72rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--text);
   padding: 0.2rem 0.65rem;
   border-radius: 20px;
   text-transform: uppercase;
@@ -172,10 +184,10 @@ const urgenciaIcon = computed(() => {
 }
 
 .colab-card__titulo {
-  font-family: var(--heading);
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text);
   margin: 0;
   line-height: 1.35;
 }
@@ -219,15 +231,15 @@ const urgenciaIcon = computed(() => {
 }
 
 .colab-card__curso-badge--origem {
-  background: var(--accent-bg);
+  background: var(--accent-light);
   color: var(--accent);
-  border: 1px solid var(--accent-border);
+  border: 1px solid var(--border-strong);
 }
 
 .colab-card__curso-badge--destino {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
 }
 
 .colab-card__competencias {
@@ -238,7 +250,7 @@ const urgenciaIcon = computed(() => {
 
 .colab-card__tag {
   font-size: 0.7rem;
-  background: var(--code-bg);
+  background: var(--surface-2);
   color: var(--text);
   padding: 0.18rem 0.55rem;
   border-radius: 6px;
@@ -287,11 +299,11 @@ const urgenciaIcon = computed(() => {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--accent);
-  text-decoration: none;
   transition: opacity 0.15s;
 }
 
-.colab-card__link:hover {
+.colab-card:hover .colab-card__link {
   opacity: 0.75;
 }
 </style>
+

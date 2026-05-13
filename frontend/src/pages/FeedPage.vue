@@ -268,8 +268,8 @@ onBeforeUnmount(() => {
   gap: 2rem;
   padding: 2rem 2.5rem;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(28, 47, 99, 0.10) 0%, rgba(15, 90, 107, 0.08) 50%, rgba(201, 162, 39, 0.08) 100%);
-  border: 1px solid rgba(28, 47, 99, 0.12);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--surface-2) 50%, var(--accent-light) 100%);
+  border: 1px solid var(--primary-border);
 }
 
 .hero-content {
@@ -305,9 +305,9 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   padding: 0.8rem 1.2rem;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--surface-glass-strong);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--border);
   backdrop-filter: blur(8px);
 }
 
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
 
 .page-active {
   background: var(--primary) !important;
-  color: #fff !important;
+  color: var(--on-primary) !important;
   border-color: var(--primary) !important;
 }
 

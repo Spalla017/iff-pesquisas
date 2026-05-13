@@ -437,7 +437,7 @@ onMounted(() => {
   gap: 2rem;
   align-items: center;
   padding: 2rem 2.5rem;
-  background: linear-gradient(135deg, rgba(30, 58, 138, 0.06), rgba(170, 59, 255, 0.06));
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
 }

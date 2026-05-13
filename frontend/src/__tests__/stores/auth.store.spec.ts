@@ -90,5 +90,17 @@ describe('auth.store', () => {
       expect(authStore.token).toBeNull();
       expect(authStore.usuario).toBeNull();
     });
+
+    it('limpa sessão inválida quando o JSON do usuário está corrompido', () => {
+      localStorage.setItem('token', 'saved-token');
+      localStorage.setItem('usuario', '{json-invalido');
+
+      authStore.carregarUsuarioSalvo();
+
+      expect(authStore.token).toBeNull();
+      expect(authStore.usuario).toBeNull();
+      expect(localStorage.getItem('token')).toBeNull();
+      expect(localStorage.getItem('usuario')).toBeNull();
+    });
   });
 });

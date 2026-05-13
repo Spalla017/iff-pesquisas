@@ -20,10 +20,18 @@ export const useAuthStore = defineStore('auth', () => {
   const carregarUsuarioSalvo = () => {
     const usuarioSalvo = localStorage.getItem('usuario');
     const tokenSalvo = localStorage.getItem('token');
-    
+
     if (usuarioSalvo && tokenSalvo) {
-      usuario.value = JSON.parse(usuarioSalvo);
-      token.value = tokenSalvo;
+      try {
+        const usuarioParseado = JSON.parse(usuarioSalvo) as Usuario;
+        usuario.value = usuarioParseado;
+        token.value = tokenSalvo;
+      } catch {
+        usuario.value = null;
+        token.value = null;
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+      }
     }
   };
 

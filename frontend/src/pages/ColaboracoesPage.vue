@@ -115,10 +115,10 @@ const handleLimpar = () => {
 }
 
 .colaboracoes-page__title {
-  font-family: var(--heading);
+  font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text);
   margin: 0 0 0.5rem;
   letter-spacing: -0.5px;
 }
@@ -136,8 +136,8 @@ const handleLimpar = () => {
   align-items: center;
   gap: 0.4rem;
   padding: 0.7rem 1.5rem;
-  background: var(--accent);
-  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: var(--on-primary);
   border: none;
   border-radius: 12px;
   font-size: 0.92rem;
@@ -145,23 +145,23 @@ const handleLimpar = () => {
   text-decoration: none;
   transition: transform 0.2s, box-shadow 0.2s;
   white-space: nowrap;
-  font-family: var(--sans);
+  font-family: var(--font-body);
   flex-shrink: 0;
 }
 
 .colaboracoes-page__cta:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(170, 59, 255, 0.3);
+  box-shadow: 0 6px 20px var(--primary-shadow);
 }
 
 .colaboracoes-page__cta--secondary {
   background: transparent;
-  color: var(--accent);
-  border: 2px solid var(--accent);
+  color: var(--primary);
+  border: 2px solid var(--primary);
 }
 
 .colaboracoes-page__cta--secondary:hover {
-  background: var(--accent-bg);
+  background: var(--primary-light);
 }
 
 /* Grid */
@@ -185,7 +185,7 @@ const handleLimpar = () => {
   width: 36px;
   height: 36px;
   border: 3px solid var(--border);
-  border-top-color: var(--accent);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
@@ -229,17 +229,17 @@ const handleLimpar = () => {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--bg);
-  color: var(--text-h);
+  color: var(--text);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .colaboracoes-page__pg-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  background: var(--accent-bg);
+  border-color: var(--primary);
+  background: var(--primary-light);
 }
 
 .colaboracoes-page__pg-btn:disabled {
@@ -270,3 +270,5 @@ const handleLimpar = () => {
   }
 }
 </style>
+
+

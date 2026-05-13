@@ -18,6 +18,16 @@ const STORAGE_KEY = 'iff-pesquisas:pesquisas:v1';
 
 const isBrowser = () => typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 
+const revogarUrlTemporaria = (url?: string) => {
+  if (!url || !url.startsWith('blob:')) {
+    return;
+  }
+
+  if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(url);
+  }
+};
+
 const limparUrlTemporaria = (url?: string) => {
   if (!url || url.startsWith('blob:')) {
     return '';
@@ -48,8 +58,10 @@ const carregarPesquisasPersistidas = (): Pesquisa[] => {
     if (!Array.isArray(parsed)) {
       return [...mockPesquisas];
     }
-
-    return parsed.map(normalizarPesquisa);
+    const persistidas = parsed.map(normalizarPesquisa);
+    const idsPersistidos = new Set(persistidas.map(p => p.id));
+    const mocksFaltantes = mockPesquisas.filter(p => !idsPersistidos.has(p.id));
+    return [...persistidas, ...mocksFaltantes];
   } catch {
     localStorage.removeItem(STORAGE_KEY);
     return [...mockPesquisas];
@@ -282,6 +294,14 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
       }
 
       const pesquisaAtual = todasPesquisas.value[index];
+      if (payload.pdf) {
+        revogarUrlTemporaria(pesquisaAtual.pdfUrl);
+      }
+
+      if (payload.imagem || payload.removerImagem) {
+        revogarUrlTemporaria(pesquisaAtual.imagemUrl);
+      }
+
       const pesquisaAtualizada: Pesquisa = {
         ...pesquisaAtual,
         titulo: payload.titulo,
@@ -322,6 +342,11 @@ export const usePesquisaStore = defineStore('pesquisa', () => {
   const deletarPesquisa = async (id: string): Promise<boolean> => {
     try {
       await new Promise(resolve => setTimeout(resolve, 300));
+      const pesquisa = todasPesquisas.value.find(p => p.id === id);
+      if (pesquisa) {
+        revogarUrlTemporaria(pesquisa.pdfUrl);
+        revogarUrlTemporaria(pesquisa.imagemUrl);
+      }
       todasPesquisas.value = todasPesquisas.value.filter(p => p.id !== id);
       persistirPesquisas();
       if (pesquisaSelecionada.value?.id === id) {

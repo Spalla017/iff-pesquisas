@@ -3,6 +3,7 @@ import { ref, computed } from 'vue';
 import type { Colaboracao, FiltrosColaboracao, CreateColaboracaoPayload, InteresseColaboracao } from '@/types';
 import { mockColaboracoes } from '@/data/mockColaboracoes';
 import { useAuthStore } from '@/stores/auth.store';
+import { useChatStore } from '@/stores/chat.store';
 
 type ColaboracaoPersistida = Omit<Colaboracao, 'dataCriacao' | 'dataAtualizacao' | 'interessados'> & {
   dataCriacao: string;
@@ -11,38 +12,80 @@ type ColaboracaoPersistida = Omit<Colaboracao, 'dataCriacao' | 'dataAtualizacao'
 };
 
 const STORAGE_KEY = 'iff-pesquisas:colaboracoes:v1';
+const SIMULATED_DELAY_MS = {
+  listagem: 150,
+  detalhe: 120,
+  criacao: 250,
+  exclusao: 120,
+};
 
 const isBrowser = () => typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+
+const revogarUrlTemporaria = (url?: string) => {
+  if (!url || !url.startsWith('blob:')) return;
+  if (typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+    URL.revokeObjectURL(url);
+  }
+};
 
 const limparUrlTemporaria = (url?: string) => {
   if (!url || url.startsWith('blob:')) return '';
   return url;
 };
 
+const POSSIVEL_MOJIBAKE = /\u00c3.|\u00c2|\u00e2|\ufffd/;
+
+const corrigirTexto = (valor: string): string => {
+  if (!POSSIVEL_MOJIBAKE.test(valor)) {
+    return valor;
+  }
+
+  try {
+    return decodeURIComponent(escape(valor));
+  } catch {
+    return valor;
+  }
+};
+
 const normalizarColaboracao = (c: Colaboracao | ColaboracaoPersistida): Colaboracao => ({
   ...c,
+  titulo: corrigirTexto(c.titulo),
+  descricao: corrigirTexto(c.descricao),
+  cursoOrigem: corrigirTexto(c.cursoOrigem),
+  cursosDesejados: c.cursosDesejados.map(corrigirTexto),
+  autor: corrigirTexto(c.autor),
+  orientador: corrigirTexto(c.orientador),
+  area: corrigirTexto(c.area),
+  competenciasNecessarias: c.competenciasNecessarias.map(corrigirTexto),
   dataCriacao: new Date(c.dataCriacao),
   dataAtualizacao: new Date(c.dataAtualizacao),
   imagemUrl: limparUrlTemporaria(c.imagemUrl),
   interessados: c.interessados.map(i => ({
     ...i,
+    usuarioNome: corrigirTexto(i.usuarioNome),
+    usuarioCurso: corrigirTexto(i.usuarioCurso),
     dataInteresse: new Date(i.dataInteresse),
   })),
 });
 
 const carregarColaboracoesPersistidas = (): Colaboracao[] => {
-  if (!isBrowser()) return [...mockColaboracoes];
+  if (!isBrowser()) return mockColaboracoes.map(normalizarColaboracao);
 
   const bruto = localStorage.getItem(STORAGE_KEY);
-  if (!bruto) return [...mockColaboracoes];
+  if (!bruto) return mockColaboracoes.map(normalizarColaboracao);
 
   try {
     const parsed = JSON.parse(bruto) as ColaboracaoPersistida[];
-    if (!Array.isArray(parsed)) return [...mockColaboracoes];
-    return parsed.map(normalizarColaboracao);
+    if (!Array.isArray(parsed)) return mockColaboracoes.map(normalizarColaboracao);
+    const persistidas = parsed.map(normalizarColaboracao);
+    const idsPersistidos = new Set(persistidas.map(c => c.id));
+    const mocksFaltantes = mockColaboracoes
+      .map(normalizarColaboracao)
+      .filter(c => !idsPersistidos.has(c.id));
+    return [...persistidas, ...mocksFaltantes];
   } catch {
     localStorage.removeItem(STORAGE_KEY);
-    return [...mockColaboracoes];
+    return mockColaboracoes.map(normalizarColaboracao);
   }
 };
 
@@ -156,7 +199,7 @@ export const useColaboracaoStore = defineStore('colaboracao', () => {
     erro.value = null;
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise(resolve => setTimeout(resolve, SIMULATED_DELAY_MS.listagem));
       paginacao.value.total = colaboracoesFiltradas.value.length;
     } catch (err: any) {
       erro.value = err.message || 'Erro ao buscar colaborações';
@@ -176,7 +219,7 @@ export const useColaboracaoStore = defineStore('colaboracao', () => {
     colaboracaoSelecionada.value = null;
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, SIMULATED_DELAY_MS.detalhe));
       const encontrada = todasColaboracoes.value.find(c => c.id === id);
       if (encontrada) {
         colaboracaoSelecionada.value = encontrada;
@@ -201,7 +244,7 @@ export const useColaboracaoStore = defineStore('colaboracao', () => {
     erro.value = null;
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, SIMULATED_DELAY_MS.criacao));
       const authStore = useAuthStore();
       const usuario = authStore.usuario;
 
@@ -355,7 +398,13 @@ export const useColaboracaoStore = defineStore('colaboracao', () => {
    */
   const deletarColaboracao = async (id: string): Promise<boolean> => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, SIMULATED_DELAY_MS.exclusao));
+      const chatStore = useChatStore();
+      const colaboracao = todasColaboracoes.value.find(c => c.id === id);
+      if (colaboracao) {
+        revogarUrlTemporaria(colaboracao.imagemUrl);
+      }
+      chatStore.removerConversaDaColaboracao(id);
       todasColaboracoes.value = todasColaboracoes.value.filter(c => c.id !== id);
       persistirColaboracoes();
       if (colaboracaoSelecionada.value?.id === id) {

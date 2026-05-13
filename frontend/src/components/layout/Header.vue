@@ -25,6 +25,7 @@
         <router-link to="/" class="nav-link" @click="fecharMenu" id="nav-home">Início</router-link>
         <router-link to="/feed" class="nav-link" @click="fecharMenu" id="nav-feed">Explorar</router-link>
         <router-link to="/colaboracoes" class="nav-link" @click="fecharMenu" id="nav-colaboracoes">Colaborações</router-link>
+        <router-link to="/como-funciona" class="nav-link" @click="fecharMenu" id="nav-como-funciona">Como funciona</router-link>
         <button
           type="button"
           class="theme-toggle"
@@ -44,9 +45,14 @@
         <template v-if="isAutenticado">
           <router-link to="/criar-post" class="nav-link nav-cta" @click="fecharMenu" id="nav-publish">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            Publicar
+            Publicar pesquisa
           </router-link>
-          <router-link to="/meus-posts" class="nav-link" @click="fecharMenu" id="nav-my-posts">Meus Posts</router-link>
+          <router-link to="/meus-posts" class="nav-link" @click="fecharMenu" id="nav-my-posts">Minhas publicações</router-link>
+          <router-link to="/mensagens" class="nav-link nav-link--mensagens" @click="fecharMenu" id="nav-mensagens">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            Mensagens
+            <span v-if="totalNaoLidas > 0" class="nav-badge">{{ totalNaoLidas }}</span>
+          </router-link>
           <div class="nav-divider"></div>
           <div class="user-menu">
             <div class="user-chip">
@@ -68,14 +74,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useAuth } from '@/composables/useAuth';
+import { useChatStore } from '@/stores/chat.store';
 import { useRouter } from 'vue-router';
 
 const { isAutenticado, usuario, logout } = useAuth();
+const chatStore = useChatStore();
 const router = useRouter();
 const menuAberto = ref(false);
 const temaEscuro = ref(false);
+const totalNaoLidas = computed(() => chatStore.totalNaoLidas);
 
 const aplicarTema = (escuro: boolean) => {
   temaEscuro.value = escuro;
@@ -109,8 +118,8 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(246, 242, 233, 0.88);
-  border-bottom: 1px solid rgba(30, 58, 138, 0.10);
+  background: var(--surface-glass);
+  border-bottom: 1px solid var(--border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -140,12 +149,12 @@ onMounted(() => {
 
 .brand-mark {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
+  color: var(--on-primary);
   padding: 0.35rem 0.6rem;
   border-radius: 10px;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
-  box-shadow: 0 6px 16px rgba(30, 58, 138, 0.22);
+  box-shadow: 0 6px 16px var(--primary-shadow);
   font-weight: 800;
 }
 
@@ -219,13 +228,13 @@ onMounted(() => {
 
 .nav-cta {
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff !important;
-  box-shadow: 0 6px 18px rgba(30, 58, 138, 0.22);
+  color: var(--on-primary) !important;
+  box-shadow: 0 6px 18px var(--primary-shadow);
 }
 
 .nav-cta:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(30, 58, 138, 0.30);
+  box-shadow: 0 10px 24px var(--primary-shadow-strong);
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
 }
 
@@ -260,7 +269,7 @@ onMounted(() => {
   height: 26px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
+  color: var(--on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -365,8 +374,29 @@ onMounted(() => {
   }
 }
 
+.nav-link--mensagens {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 0.3rem;
+  border-radius: 50%;
+  background: var(--danger);
+  color: var(--on-danger);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
 :global(html[data-theme='dark']) .header {
-  background: rgba(12, 21, 39, 0.9);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
+  background: var(--surface-glass);
+  border-bottom-color: var(--border);
 }
 </style>

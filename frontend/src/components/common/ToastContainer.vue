@@ -100,27 +100,27 @@ const toastStore = useToastStore();
 }
 
 .toast-close:hover {
-  background: rgba(15, 23, 42, 0.06);
+  background: var(--surface-hover);
   opacity: 1;
 }
 
 .toast-info {
-  border-color: rgba(15, 118, 110, 0.18);
+  border-color: var(--primary-border);
   color: var(--primary);
 }
 
 .toast-success {
-  border-color: rgba(5, 150, 105, 0.24);
+  border-color: var(--success-border);
   color: var(--success);
 }
 
 .toast-warning {
-  border-color: rgba(217, 119, 6, 0.24);
+  border-color: var(--warning-border);
   color: var(--warning);
 }
 
 .toast-danger {
-  border-color: rgba(220, 38, 38, 0.24);
+  border-color: var(--danger-border);
   color: var(--danger);
 }
 

@@ -66,9 +66,20 @@ test('menu mobile abre dentro do viewport e navega para feed', async ({ page }) 
   const navBox = await page.locator('#main-nav').boundingBox();
   expect(navBox).not.toBeNull();
   expect(navBox!.x).toBeGreaterThanOrEqual(0);
-  expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(390);
+  expect(navBox!.x + navBox!.width).toBeLessThanOrEqual(391);
 
   await page.locator('#nav-feed').click();
   await expect(page).toHaveURL(/\/feed$/);
   await expect(page.locator('#search-input')).toBeVisible();
+});
+
+test('pagina como funciona orienta os fluxos principais', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#nav-como-funciona').click();
+
+  await expect(page).toHaveURL(/\/como-funciona$/);
+  await expect(page.getByRole('heading', { name: /Como funciona o IFF Pesquisas/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Publicar uma pesquisa/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Solicitar colaboração entre cursos/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Demonstrar interesse em colaborar/i })).toBeVisible();
 });

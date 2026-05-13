@@ -2,16 +2,34 @@
   <div class="criar-solicitacao-page">
     <header class="criar-solicitacao-page__header">
       <router-link to="/colaboracoes" class="criar-solicitacao-page__voltar">← Voltar às colaborações</router-link>
-      <h1 class="criar-solicitacao-page__title">Solicitar Colaboração</h1>
-      <p class="criar-solicitacao-page__subtitle">
-        Descreva seu projeto e indique de quais cursos você precisa de ajuda.
+      <h1 class="criar-solicitacao-page__title">Solicitação de colaboração</h1>
+      <p id="form-intro" class="criar-solicitacao-page__subtitle">
+        Informe o projeto, os cursos desejados e as competências necessárias para receber apoio interdisciplinar.
       </p>
     </header>
 
-    <form class="criar-solicitacao-page__form" @submit.prevent="handleSubmit">
+    <form class="criar-solicitacao-page__form" aria-describedby="form-intro" novalidate @submit.prevent="handleSubmit">
+      <div
+        v-if="errosResumo.length"
+        class="form-error-summary"
+        role="alert"
+        aria-live="assertive"
+        tabindex="-1"
+      >
+        <h2>Revise os campos antes de publicar</h2>
+        <p>Encontramos informações que precisam ser corrigidas:</p>
+        <ul>
+          <li v-for="item in errosResumo" :key="item.campo">
+            <button type="button" class="form-error-summary__link" @click="focarCampoErro(item.campo)">
+              {{ item.mensagem }}
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <!-- Título -->
       <div class="form-group">
-        <label for="titulo" class="form-label">Título do Projeto *</label>
+        <label for="titulo" class="form-label">Título do projeto *</label>
         <input
           id="titulo"
           v-model="form.titulo"
@@ -20,30 +38,34 @@
           :class="{ 'form-input--erro': erros.titulo }"
           placeholder="Ex: Sistema de Gestão para Cooperativa Agrícola"
           maxlength="150"
+          :aria-invalid="!!erros.titulo"
+          :aria-describedby="erros.titulo ? 'titulo-erro titulo-hint' : 'titulo-hint'"
         />
-        <span v-if="erros.titulo" class="form-erro">{{ erros.titulo }}</span>
-        <span class="form-hint">{{ form.titulo.length }}/150 caracteres</span>
+        <span v-if="erros.titulo" id="titulo-erro" class="form-erro">{{ erros.titulo }}</span>
+        <span id="titulo-hint" :class="['form-hint', obterClasseContador(form.titulo.length, 150)]">{{ form.titulo.length }}/150 caracteres</span>
       </div>
 
       <!-- Descrição -->
       <div class="form-group">
-        <label for="descricao" class="form-label">Descrição Detalhada *</label>
+        <label for="descricao" class="form-label">Descrição detalhada *</label>
         <textarea
           id="descricao"
           v-model="form.descricao"
           class="form-textarea"
           :class="{ 'form-input--erro': erros.descricao }"
-          placeholder="Descreva o projeto, o que já foi feito, e que tipo de ajuda você precisa..."
+          placeholder="Descreva o projeto, o que já foi feito e que tipo de apoio interdisciplinar você precisa."
           rows="6"
           maxlength="1000"
+          :aria-invalid="!!erros.descricao"
+          :aria-describedby="erros.descricao ? 'descricao-erro descricao-hint' : 'descricao-hint'"
         />
-        <span v-if="erros.descricao" class="form-erro">{{ erros.descricao }}</span>
-        <span class="form-hint">{{ form.descricao.length }}/1000 caracteres</span>
+        <span v-if="erros.descricao" id="descricao-erro" class="form-erro">{{ erros.descricao }}</span>
+        <span id="descricao-hint" :class="['form-hint', obterClasseContador(form.descricao.length, 1000)]">{{ form.descricao.length }}/1000 caracteres</span>
       </div>
 
       <!-- Curso de Origem (auto) -->
       <div class="form-group">
-        <label class="form-label">Seu Curso</label>
+        <span class="form-label">Curso de origem</span>
         <div class="form-static">
           <span class="curso-badge curso-badge--origem">{{ cursoOrigem }}</span>
           <span class="form-hint-inline">Identificado automaticamente pelo seu perfil</span>
@@ -52,15 +74,25 @@
 
       <!-- Cursos Desejados -->
       <div class="form-group">
-        <label class="form-label">De quais cursos você precisa de ajuda? *</label>
-        <div class="form-checkboxes" :class="{ 'form-input--erro': erros.cursosDesejados }">
+        <span id="cursos-desejados-label" class="form-label">Cursos desejados para colaboração *</span>
+        <div
+          id="cursos-desejados"
+          class="form-checkboxes"
+          :class="{ 'form-input--erro': erros.cursosDesejados }"
+          role="group"
+          tabindex="-1"
+          aria-labelledby="cursos-desejados-label"
+          :aria-invalid="!!erros.cursosDesejados"
+          :aria-describedby="erros.cursosDesejados ? 'cursos-desejados-erro cursos-desejados-hint' : 'cursos-desejados-hint'"
+        >
           <label
-            v-for="curso in cursosDisponiveis"
+            v-for="(curso, index) in cursosDisponiveis"
             :key="curso"
             class="form-checkbox"
             :class="{ 'form-checkbox--disabled': curso === cursoOrigem }"
           >
             <input
+              :id="`curso-${index}`"
               type="checkbox"
               :value="curso"
               :disabled="curso === cursoOrigem"
@@ -71,45 +103,56 @@
             <span>{{ curso }}</span>
           </label>
         </div>
-        <span v-if="erros.cursosDesejados" class="form-erro">{{ erros.cursosDesejados }}</span>
+        <span id="cursos-desejados-hint" class="form-hint">Selecione ao menos um curso diferente do seu curso de origem.</span>
+        <span v-if="erros.cursosDesejados" id="cursos-desejados-erro" class="form-erro">{{ erros.cursosDesejados }}</span>
       </div>
 
       <!-- Área + Urgência (row) -->
       <div class="form-row">
         <div class="form-group">
-          <label for="area" class="form-label">Área de Conhecimento *</label>
+          <label for="area" class="form-label">Área de conhecimento *</label>
           <select
             id="area"
             v-model="form.area"
             class="form-select"
             :class="{ 'form-input--erro': erros.area }"
+            :aria-invalid="!!erros.area"
+            :aria-describedby="erros.area ? 'area-erro' : undefined"
           >
             <option value="" disabled>Selecione uma área</option>
             <option v-for="area in areas" :key="area" :value="area">{{ area }}</option>
           </select>
-          <span v-if="erros.area" class="form-erro">{{ erros.area }}</span>
+          <span v-if="erros.area" id="area-erro" class="form-erro">{{ erros.area }}</span>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Urgência *</label>
-          <div class="form-radios" :class="{ 'form-input--erro': erros.urgencia }">
+          <span id="urgencia-label" class="form-label">Urgência *</span>
+          <div
+            id="urgencia"
+            class="form-radios"
+            :class="{ 'form-input--erro': erros.urgencia }"
+            role="radiogroup"
+            aria-labelledby="urgencia-label"
+            :aria-invalid="!!erros.urgencia"
+            :aria-describedby="erros.urgencia ? 'urgencia-erro' : undefined"
+          >
             <label class="form-radio">
-              <input type="radio" v-model="form.urgencia" value="baixa" />
+              <input id="urgencia-baixa" type="radio" v-model="form.urgencia" name="urgencia" value="baixa" />
               <span class="form-radio__mark" />
-              <span>🟢 Baixa</span>
+              <span>Baixa</span>
             </label>
             <label class="form-radio">
-              <input type="radio" v-model="form.urgencia" value="media" />
+              <input type="radio" v-model="form.urgencia" name="urgencia" value="media" />
               <span class="form-radio__mark" />
-              <span>🟡 Média</span>
+              <span>Média</span>
             </label>
             <label class="form-radio">
-              <input type="radio" v-model="form.urgencia" value="alta" />
+              <input type="radio" v-model="form.urgencia" name="urgencia" value="alta" />
               <span class="form-radio__mark" />
-              <span>🔴 Alta</span>
+              <span>Alta</span>
             </label>
           </div>
-          <span v-if="erros.urgencia" class="form-erro">{{ erros.urgencia }}</span>
+          <span v-if="erros.urgencia" id="urgencia-erro" class="form-erro">{{ erros.urgencia }}</span>
         </div>
       </div>
 
@@ -123,13 +166,16 @@
           class="form-input"
           :class="{ 'form-input--erro': erros.orientador }"
           placeholder="Nome do professor orientador"
+          autocomplete="name"
+          :aria-invalid="!!erros.orientador"
+          :aria-describedby="erros.orientador ? 'orientador-erro' : undefined"
         />
-        <span v-if="erros.orientador" class="form-erro">{{ erros.orientador }}</span>
+        <span v-if="erros.orientador" id="orientador-erro" class="form-erro">{{ erros.orientador }}</span>
       </div>
 
       <!-- Competências -->
       <div class="form-group">
-        <label for="competencia-input" class="form-label">Competências Necessárias</label>
+        <label for="competencia-input" class="form-label">Competências necessárias</label>
         <div class="form-tags-wrap">
           <div class="form-tags">
             <span
@@ -138,7 +184,7 @@
               class="form-tag"
             >
               {{ comp }}
-              <button type="button" class="form-tag__remove" @click="removerCompetencia(idx)">✕</button>
+              <button type="button" class="form-tag__remove" :aria-label="`Remover competência ${comp}`" @click="removerCompetencia(idx)">✕</button>
             </span>
           </div>
           <div class="form-tag-input-wrap" v-if="form.competenciasNecessarias.length < 8">
@@ -148,48 +194,58 @@
               type="text"
               class="form-input form-input--sm"
               placeholder="Ex: Gestão financeira"
+              aria-describedby="competencia-hint competencia-aviso"
+              @input="competenciaAviso = ''"
               @keydown.enter.prevent="adicionarCompetencia"
             />
             <button type="button" class="form-tag-add" @click="adicionarCompetencia">+ Adicionar</button>
           </div>
-          <span class="form-hint">{{ form.competenciasNecessarias.length }}/8 competências. Pressione Enter para adicionar.</span>
+          <span id="competencia-hint" class="form-hint">{{ form.competenciasNecessarias.length }}/8 competências. Pressione Enter para adicionar.</span>
+          <span v-if="competenciaAviso" id="competencia-aviso" class="form-erro" aria-live="polite">{{ competenciaAviso }}</span>
         </div>
       </div>
 
       <!-- Imagem -->
       <div class="form-group">
-        <label class="form-label">Imagem Ilustrativa (Opcional)</label>
+        <label for="imagem-input" class="form-label">Imagem ilustrativa opcional</label>
         <div
           class="form-dropzone"
-          :class="{ 'form-dropzone--active': dragActive }"
+          :class="{ 'form-dropzone--active': dragActive, 'form-dropzone--erro': erros.imagem }"
           @dragenter.prevent="dragActive = true"
           @dragleave.prevent="dragActive = false"
           @dragover.prevent
           @drop.prevent="handleDrop"
         >
           <input
+            id="imagem-input"
             type="file"
-            accept="image/*"
+            accept="image/png,image/jpeg,image/webp"
             class="form-dropzone__input"
+            :aria-invalid="!!erros.imagem"
+            :aria-describedby="erros.imagem ? 'imagem-erro imagem-hint' : 'imagem-hint'"
             @change="handleFileChange"
           />
           <div v-if="!imagemPreview" class="form-dropzone__placeholder">
-            <span class="form-dropzone__icon">📷</span>
             <span>Arraste uma imagem ou clique para selecionar</span>
+            <span class="form-hint">Formatos aceitos: JPG, PNG ou WebP, até 5 MB.</span>
           </div>
           <div v-else class="form-dropzone__preview">
-            <img :src="imagemPreview" alt="Preview" />
+            <img :src="imagemPreview" alt="Pré-visualização da imagem ilustrativa da solicitação" />
             <button type="button" class="form-dropzone__remove" @click.stop="removerImagem">✕ Remover</button>
           </div>
         </div>
+        <span id="imagem-hint" class="form-hint">A imagem é opcional e deve ter até 5 MB.</span>
+        <span v-if="erros.imagem" id="imagem-erro" class="form-erro">{{ erros.imagem }}</span>
       </div>
 
       <!-- Submit -->
       <div class="form-actions">
-        <button type="submit" class="form-submit" :disabled="store.carregando">
+        <router-link to="/colaboracoes" class="form-cancel">Cancelar</router-link>
+        <button type="submit" class="form-submit" :disabled="store.carregando" :aria-busy="store.carregando">
           <span v-if="store.carregando" class="form-submit__spinner" />
-          {{ store.carregando ? 'Publicando...' : '🚀 Publicar Solicitação' }}
+          {{ store.carregando ? 'Publicando solicitação...' : 'Publicar solicitação' }}
         </button>
+        <p v-if="store.carregando" class="sr-only" aria-live="polite">Publicando solicitação de colaboração.</p>
       </div>
     </form>
   </div>
@@ -197,21 +253,34 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onUnmounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useColaboracaoStore } from '@/stores/colaboracao.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useToastStore } from '@/stores/toast.store';
 import { createColaboracaoSchema, extrairErroZod } from '@/schemas';
-import { CURSOS_DISPONIVEIS } from '@/data/mockColaboracoes';
-import { AREAS_DISPONIVEIS } from '@/data/mockPesquisas';
+import { CURSOS_IFF, AREAS_CONHECIMENTO } from '@/data/catalogos';
 
 const router = useRouter();
 const store = useColaboracaoStore();
 const authStore = useAuthStore();
 const toastStore = useToastStore();
 
-const cursosDisponiveis = CURSOS_DISPONIVEIS;
-const areas = AREAS_DISPONIVEIS;
+const cursosDisponiveis = CURSOS_IFF;
+const areas = AREAS_CONHECIMENTO;
+const permitirSaidaSemConfirmacao = ref(false);
+const tiposImagemAceitos = ['image/jpeg', 'image/png', 'image/webp'];
+const tamanhoMaximoImagemMb = 5;
+const tamanhoMaximoImagemBytes = tamanhoMaximoImagemMb * 1024 * 1024;
+const camposErro: Record<string, { id: string; label: string }> = {
+  titulo: { id: 'titulo', label: 'Título do projeto' },
+  descricao: { id: 'descricao', label: 'Descrição detalhada' },
+  cursosDesejados: { id: 'cursos-desejados', label: 'Cursos desejados para colaboração' },
+  area: { id: 'area', label: 'Área de conhecimento' },
+  urgencia: { id: 'urgencia-baixa', label: 'Urgência' },
+  orientador: { id: 'orientador', label: 'Orientador' },
+  imagem: { id: 'imagem-input', label: 'Imagem ilustrativa' },
+};
+const ordemCamposErro = Object.keys(camposErro);
 
 const cursoOrigem = computed(() => authStore.usuario?.curso || 'Sistemas de Informação');
 
@@ -227,9 +296,31 @@ const form = reactive({
 
 const erros = reactive<Record<string, string>>({});
 const competenciaInput = ref('');
+const competenciaAviso = ref('');
 const imagemFile = ref<File | null>(null);
 const imagemPreview = ref('');
 const dragActive = ref(false);
+
+const formularioSujo = computed(() => (
+  form.titulo.trim().length > 0 ||
+  form.descricao.trim().length > 0 ||
+  form.cursosDesejados.length > 0 ||
+  form.orientador.trim().length > 0 ||
+  form.area.trim().length > 0 ||
+  form.urgencia.trim().length > 0 ||
+  form.competenciasNecessarias.length > 0 ||
+  !!imagemFile.value
+));
+
+const errosResumo = computed(() =>
+  ordemCamposErro
+    .filter(campo => erros[campo])
+    .map(campo => ({
+      campo,
+      label: camposErro[campo].label,
+      mensagem: erros[campo],
+    })),
+);
 
 // Limpar erros individuais reativamente ao preencher campos
 watch(() => form.titulo, () => { if (erros.titulo) delete erros.titulo; });
@@ -250,8 +341,19 @@ const toggleCurso = (curso: string) => {
 
 const adicionarCompetencia = () => {
   const valor = competenciaInput.value.trim();
+  competenciaAviso.value = '';
+
   if (!valor || form.competenciasNecessarias.length >= 8) return;
-  if (form.competenciasNecessarias.includes(valor)) return;
+
+  const jaAdicionada = form.competenciasNecessarias.some(
+    competencia => competencia.toLowerCase() === valor.toLowerCase(),
+  );
+
+  if (jaAdicionada) {
+    competenciaAviso.value = 'Esta competência já foi adicionada.';
+    return;
+  }
+
   form.competenciasNecessarias.push(valor);
   competenciaInput.value = '';
 };
@@ -263,7 +365,10 @@ const removerCompetencia = (idx: number) => {
 const handleFileChange = (e: Event) => {
   const target = e.target as HTMLInputElement;
   if (target.files?.[0]) {
-    setImagem(target.files[0]);
+    const imagemAceita = setImagem(target.files[0]);
+    if (!imagemAceita) {
+      target.value = '';
+    }
   }
 };
 
@@ -274,16 +379,38 @@ const handleDrop = (e: DragEvent) => {
   }
 };
 
-const setImagem = (file: File) => {
+const validarImagem = (file: File): string | null => {
+  if (!tiposImagemAceitos.includes(file.type)) {
+    return 'A imagem deve estar em formato JPG, PNG ou WebP.';
+  }
+
+  if (file.size > tamanhoMaximoImagemBytes) {
+    return `A imagem deve ter no máximo ${tamanhoMaximoImagemMb} MB.`;
+  }
+
+  return null;
+};
+
+const setImagem = (file: File): boolean => {
+  const erroImagem = validarImagem(file);
+  if (erroImagem) {
+    erros.imagem = erroImagem;
+    toastStore.notificar(erroImagem, 'warning');
+    return false;
+  }
+
+  delete erros.imagem;
   imagemFile.value = file;
   if (imagemPreview.value) URL.revokeObjectURL(imagemPreview.value);
   imagemPreview.value = URL.createObjectURL(file);
+  return true;
 };
 
 const removerImagem = () => {
   if (imagemPreview.value) URL.revokeObjectURL(imagemPreview.value);
   imagemFile.value = null;
   imagemPreview.value = '';
+  delete erros.imagem;
 };
 
 onUnmounted(() => {
@@ -292,6 +419,31 @@ onUnmounted(() => {
 
 const limparErros = () => {
   Object.keys(erros).forEach(k => delete erros[k]);
+};
+
+const obterClasseContador = (atual: number, limite: number) => {
+  const percentual = atual / limite;
+  if (percentual >= 0.95) return 'form-hint--danger';
+  if (percentual >= 0.8) return 'form-hint--warning';
+  return '';
+};
+
+const focarCampoErro = (campo: string) => {
+  const id = camposErro[campo]?.id;
+  if (!id) return;
+
+  const elemento = document.getElementById(id);
+  if (elemento) {
+    elemento.focus();
+    elemento.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
+
+const focarPrimeiroCampoComErro = () => {
+  const primeiroCampo = errosResumo.value[0]?.campo;
+  if (!primeiroCampo) return;
+
+  window.requestAnimationFrame(() => focarCampoErro(primeiroCampo));
 };
 
 const handleSubmit = async () => {
@@ -303,7 +455,8 @@ const handleSubmit = async () => {
       const campo = issue.path[0] as string;
       if (!erros[campo]) erros[campo] = issue.message;
     });
-    toastStore.notificar(extrairErroZod(validacao) || 'Corrija os erros no formulário.', 'error');
+    toastStore.notificar(extrairErroZod(validacao) || 'Corrija os erros no formulário.', 'danger');
+    focarPrimeiroCampoComErro();
     return;
   }
 
@@ -313,12 +466,21 @@ const handleSubmit = async () => {
   });
 
   if (ok) {
+    permitirSaidaSemConfirmacao.value = true;
     toastStore.notificar('Solicitação publicada com sucesso! 🎉', 'success');
     router.push('/colaboracoes');
   } else {
-    toastStore.notificar(store.erro || 'Erro ao publicar solicitação.', 'error');
+    toastStore.notificar(store.erro || 'Não foi possível publicar a solicitação. Tente novamente.', 'danger');
   }
 };
+
+onBeforeRouteLeave(() => {
+  if (permitirSaidaSemConfirmacao.value || !formularioSujo.value) {
+    return true;
+  }
+
+  return window.confirm('Você possui alterações não salvas. Deseja sair mesmo assim?');
+});
 </script>
 
 <style scoped>
@@ -348,10 +510,10 @@ const handleSubmit = async () => {
 }
 
 .criar-solicitacao-page__title {
-  font-family: var(--heading);
+  font-family: var(--font-display);
   font-size: 1.8rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text);
   margin: 0 0 0.5rem;
   letter-spacing: -0.4px;
 }
@@ -369,6 +531,45 @@ const handleSubmit = async () => {
   gap: 1.5rem;
 }
 
+.form-error-summary {
+  padding: 1rem;
+  border: 1px solid var(--danger-border);
+  border-radius: 10px;
+  background: var(--danger-light);
+  color: var(--text);
+}
+
+.form-error-summary h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.form-error-summary p {
+  margin: 0 0 0.5rem;
+  font-size: 0.86rem;
+}
+
+.form-error-summary ul {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.form-error-summary__link {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.form-error-summary__link:hover,
+.form-error-summary__link:focus {
+  text-decoration: underline;
+}
+
 /* Form Elements */
 .form-group {
   display: flex;
@@ -379,7 +580,7 @@ const handleSubmit = async () => {
 .form-label {
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--text-h);
+  color: var(--text);
 }
 
 .form-input,
@@ -390,8 +591,8 @@ const handleSubmit = async () => {
   border-radius: 10px;
   font-size: 0.9rem;
   background: var(--bg);
-  color: var(--text-h);
-  font-family: var(--sans);
+  color: var(--text);
+  font-family: var(--font-body);
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
   width: 100%;
@@ -401,12 +602,12 @@ const handleSubmit = async () => {
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .form-input--erro {
-  border-color: #ef4444 !important;
+  border-color: var(--danger) !important;
 }
 
 .form-input--sm {
@@ -425,6 +626,16 @@ const handleSubmit = async () => {
   opacity: 0.5;
 }
 
+.form-hint--warning {
+  color: var(--warning);
+  opacity: 0.85;
+}
+
+.form-hint--danger {
+  color: var(--danger);
+  opacity: 1;
+}
+
 .form-hint-inline {
   font-size: 0.78rem;
   color: var(--text);
@@ -433,7 +644,7 @@ const handleSubmit = async () => {
 
 .form-erro {
   font-size: 0.78rem;
-  color: #ef4444;
+  color: var(--danger);
   font-weight: 500;
 }
 
@@ -465,7 +676,7 @@ const handleSubmit = async () => {
   gap: 0.5rem;
   cursor: pointer;
   font-size: 0.88rem;
-  color: var(--text-h);
+  color: var(--text);
 }
 
 .form-checkbox--disabled {
@@ -474,7 +685,7 @@ const handleSubmit = async () => {
 }
 
 .form-checkbox input {
-  accent-color: var(--accent);
+  accent-color: var(--primary);
   width: 16px;
   height: 16px;
 }
@@ -491,11 +702,11 @@ const handleSubmit = async () => {
   gap: 0.4rem;
   cursor: pointer;
   font-size: 0.88rem;
-  color: var(--text-h);
+  color: var(--text);
 }
 
 .form-radio input {
-  accent-color: var(--accent);
+  accent-color: var(--primary);
 }
 
 /* Tags */
@@ -516,12 +727,12 @@ const handleSubmit = async () => {
   align-items: center;
   gap: 0.35rem;
   padding: 0.25rem 0.65rem;
-  background: var(--accent-bg);
+  background: var(--accent-light);
   color: var(--accent);
   font-size: 0.8rem;
   font-weight: 500;
   border-radius: 20px;
-  border: 1px solid var(--accent-border);
+  border: 1px solid var(--border-strong);
 }
 
 .form-tag__remove {
@@ -546,20 +757,20 @@ const handleSubmit = async () => {
 
 .form-tag-add {
   padding: 0.5rem 1rem;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--primary);
   border-radius: 8px;
   background: transparent;
-  color: var(--accent);
+  color: var(--primary);
   font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
   white-space: nowrap;
 }
 
 .form-tag-add:hover {
-  background: var(--accent-bg);
+  background: var(--primary-light);
 }
 
 /* Course Badge */
@@ -571,9 +782,9 @@ const handleSubmit = async () => {
 }
 
 .curso-badge--origem {
-  background: var(--accent-bg);
+  background: var(--accent-light);
   color: var(--accent);
-  border: 1px solid var(--accent-border);
+  border: 1px solid var(--border-strong);
 }
 
 /* Dropzone */
@@ -589,8 +800,12 @@ const handleSubmit = async () => {
 
 .form-dropzone:hover,
 .form-dropzone--active {
-  border-color: var(--accent);
-  background: var(--accent-bg);
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.form-dropzone--erro {
+  border-color: var(--danger);
 }
 
 .form-dropzone__input {
@@ -628,8 +843,8 @@ const handleSubmit = async () => {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
+  background: var(--overlay-strong);
+  color: var(--footer-text);
   border: none;
   border-radius: 6px;
   padding: 0.3rem 0.6rem;
@@ -641,6 +856,31 @@ const handleSubmit = async () => {
 /* Submit */
 .form-actions {
   padding-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.form-cancel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.form-cancel:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
 }
 
 .form-submit {
@@ -648,20 +888,20 @@ const handleSubmit = async () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.8rem 2rem;
-  background: var(--accent);
-  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
+  color: var(--on-primary);
   border: none;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .form-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 24px rgba(170, 59, 255, 0.3);
+  box-shadow: 0 6px 24px var(--primary-shadow);
 }
 
 .form-submit:disabled {
@@ -672,10 +912,22 @@ const handleSubmit = async () => {
 .form-submit__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid var(--border-strong);
+  border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @keyframes spin {
@@ -693,3 +945,5 @@ const handleSubmit = async () => {
   }
 }
 </style>
+
+

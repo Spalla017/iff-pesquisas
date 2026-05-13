@@ -103,7 +103,11 @@
     <!-- Active Filters Summary -->
     <div v-if="temFiltrosAtivos" class="active-filters">
       <span class="filter-count">{{ totalResultados }} resultado{{ totalResultados !== 1 ? 's' : '' }}</span>
-      <div class="active-tags" v-if="areaSelecionada || autorBusca || orientadorBusca">
+      <div class="active-tags" v-if="termoBusca || areaSelecionada || autorBusca || orientadorBusca">
+        <span v-if="termoBusca" class="active-tag">
+          Busca: {{ termoBusca }}
+          <button @click="$emit('update:termoBusca', '')" class="tag-remove" aria-label="Remover termo de busca">×</button>
+        </span>
         <span v-if="areaSelecionada" class="active-tag">
           {{ areaSelecionada }}
           <button @click="$emit('update:areaSelecionada', '')" class="tag-remove" aria-label="Remover filtro de área">×</button>

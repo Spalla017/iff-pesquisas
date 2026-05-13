@@ -16,7 +16,7 @@
           v-if="termoLocal"
           class="colab-filters__clear-input"
           title="Limpar busca"
-          @click="termoLocal = ''; aplicarFiltros()"
+          @click="limparBusca"
         >
           ✕
         </button>
@@ -104,13 +104,40 @@
       </button>
       <span class="colab-filters__count">{{ totalResultados }} resultado(s)</span>
     </div>
+
+    <div v-if="temFiltrosAtivos" class="colab-filters__active" aria-label="Filtros ativos">
+      <span v-if="termoLocal" class="colab-filters__chip">
+        Busca: {{ termoLocal }}
+        <button type="button" aria-label="Remover termo de busca" @click="limparCampo('termo')">×</button>
+      </span>
+      <span v-if="cursoDesejadoLocal" class="colab-filters__chip">
+        Precisa de: {{ cursoDesejadoLocal }}
+        <button type="button" aria-label="Remover filtro de curso desejado" @click="limparCampo('cursoDesejado')">×</button>
+      </span>
+      <span v-if="cursoOrigemLocal" class="colab-filters__chip">
+        Publicado por: {{ cursoOrigemLocal }}
+        <button type="button" aria-label="Remover filtro de curso de origem" @click="limparCampo('cursoOrigem')">×</button>
+      </span>
+      <span v-if="areaLocal" class="colab-filters__chip">
+        Área: {{ areaLocal }}
+        <button type="button" aria-label="Remover filtro de área" @click="limparCampo('area')">×</button>
+      </span>
+      <span v-if="urgenciaLocal" class="colab-filters__chip">
+        Urgência: {{ labelUrgencia(urgenciaLocal) }}
+        <button type="button" aria-label="Remover filtro de urgência" @click="limparCampo('urgencia')">×</button>
+      </span>
+      <span v-if="statusLocal" class="colab-filters__chip">
+        Status: {{ labelStatus(statusLocal) }}
+        <button type="button" aria-label="Remover filtro de status" @click="limparCampo('status')">×</button>
+      </span>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
 import type { FiltrosColaboracao } from '@/types';
-import { CURSOS_DISPONIVEIS, AREAS_DISPONIVEIS } from '@/data/mockColaboracoes';
+import { CURSOS_IFF, AREAS_CONHECIMENTO } from '@/data/catalogos';
 
 const emit = defineEmits<{
   (e: 'filtrar', filtros: FiltrosColaboracao): void;
@@ -121,8 +148,8 @@ defineProps<{
   totalResultados: number;
 }>();
 
-const cursos = CURSOS_DISPONIVEIS;
-const areas = AREAS_DISPONIVEIS;
+const cursos = CURSOS_IFF;
+const areas = AREAS_CONHECIMENTO;
 
 const termoLocal = ref('');
 const cursoDesejadoLocal = ref('');
@@ -130,10 +157,16 @@ const cursoOrigemLocal = ref('');
 const areaLocal = ref('');
 const urgenciaLocal = ref('');
 const statusLocal = ref('');
+const ignorarProximoDebounce = ref(false);
 
 // Debounce na busca textual para evitar re-renders excessivos
 let debounceTimer: ReturnType<typeof setTimeout>;
 watch(termoLocal, () => {
+  if (ignorarProximoDebounce.value) {
+    ignorarProximoDebounce.value = false;
+    return;
+  }
+
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => aplicarFiltros(), 300);
 });
@@ -142,6 +175,25 @@ onUnmounted(() => clearTimeout(debounceTimer));
 const temFiltrosAtivos = computed(() =>
   !!(termoLocal.value || cursoDesejadoLocal.value || cursoOrigemLocal.value || areaLocal.value || urgenciaLocal.value || statusLocal.value),
 );
+
+const labelUrgencia = (urgencia: string) => {
+  const labels: Record<string, string> = {
+    baixa: 'Baixa',
+    media: 'Média',
+    alta: 'Alta',
+  };
+  return labels[urgencia] ?? urgencia;
+};
+
+const labelStatus = (status: string) => {
+  const labels: Record<string, string> = {
+    aberta: 'Aberta',
+    em_andamento: 'Em andamento',
+    concluida: 'Concluída',
+    cancelada: 'Cancelada',
+  };
+  return labels[status] ?? status;
+};
 
 const aplicarFiltros = () => {
   const filtros: FiltrosColaboracao = {};
@@ -154,7 +206,26 @@ const aplicarFiltros = () => {
   emit('filtrar', filtros);
 };
 
+const limparCampo = (campo: 'termo' | 'cursoDesejado' | 'cursoOrigem' | 'area' | 'urgencia' | 'status') => {
+  if (campo === 'termo') termoLocal.value = '';
+  if (campo === 'cursoDesejado') cursoDesejadoLocal.value = '';
+  if (campo === 'cursoOrigem') cursoOrigemLocal.value = '';
+  if (campo === 'area') areaLocal.value = '';
+  if (campo === 'urgencia') urgenciaLocal.value = '';
+  if (campo === 'status') statusLocal.value = '';
+  aplicarFiltros();
+};
+
+const limparBusca = () => {
+  clearTimeout(debounceTimer);
+  ignorarProximoDebounce.value = true;
+  termoLocal.value = '';
+  aplicarFiltros();
+};
+
 const limparTudo = () => {
+  clearTimeout(debounceTimer);
+  ignorarProximoDebounce.value = true;
   termoLocal.value = '';
   cursoDesejadoLocal.value = '';
   cursoOrigemLocal.value = '';
@@ -194,20 +265,20 @@ const limparTudo = () => {
 .colab-filters__input {
   width: 100%;
   padding: 0.75rem 2.5rem 0.75rem 2.8rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 12px;
   font-size: 0.92rem;
-  background: var(--bg);
-  color: var(--text-h);
+  background: var(--surface);
+  color: var(--text);
   transition: border-color 0.2s, box-shadow 0.2s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
   box-sizing: border-box;
 }
 
 .colab-filters__input:focus {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-bg);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .colab-filters__clear-input {
@@ -252,19 +323,20 @@ const limparTudo = () => {
 
 .colab-filters__select {
   padding: 0.55rem 0.8rem;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--border);
   border-radius: 10px;
   font-size: 0.85rem;
-  background: var(--bg);
-  color: var(--text-h);
+  background: var(--surface);
+  color: var(--text);
   cursor: pointer;
   transition: border-color 0.2s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .colab-filters__select:focus {
   outline: none;
-  border-color: var(--accent);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 .colab-filters__actions {
@@ -286,18 +358,53 @@ const limparTudo = () => {
   font-weight: 500;
   color: var(--text);
   transition: background 0.15s, color 0.15s;
-  font-family: var(--sans);
+  font-family: var(--font-body);
 }
 
 .colab-filters__limpar:hover {
-  background: var(--accent-bg);
-  color: var(--accent);
+  background: var(--primary-light);
+  color: var(--primary);
 }
 
 .colab-filters__count {
   font-size: 0.8rem;
   color: var(--text);
   opacity: 0.6;
+}
+
+.colab-filters__active {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.colab-filters__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--primary-light);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.colab-filters__chip button {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+}
+
+.colab-filters__chip button:hover,
+.colab-filters__chip button:focus {
+  opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -310,3 +417,5 @@ const limparTudo = () => {
   }
 }
 </style>
+
+

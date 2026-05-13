@@ -147,3 +147,12 @@ export interface CreateColaboracaoPayload {
   competenciasNecessarias: string[];
   imagem?: File | null;
 }
+
+// Re-export chat types
+export type {
+  ChatConversa,
+  ChatParticipante,
+  ChatMensagem,
+  ChatConversaResumo,
+} from './chat';
+

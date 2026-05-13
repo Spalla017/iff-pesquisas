@@ -183,10 +183,10 @@ const handleLogin = async () => {
 
 /* Left Panel */
 .login-panel {
-  background: linear-gradient(160deg, rgba(28, 47, 99, 0.12), rgba(201, 162, 39, 0.08));
+  background: linear-gradient(160deg, var(--primary-light), var(--accent-light));
   border-radius: var(--radius-xl);
   padding: 3rem;
-  border: 1px solid rgba(28, 47, 99, 0.12);
+  border: 1px solid var(--primary-border);
   display: flex;
   align-items: center;
 }
@@ -210,8 +210,8 @@ const handleLogin = async () => {
   gap: 0.85rem;
   min-height: 74px;
   padding: 0.7rem 1rem;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: var(--surface-glass-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
   backdrop-filter: blur(10px);
@@ -229,14 +229,14 @@ const handleLogin = async () => {
   width: 9px;
   height: 9px;
   border-radius: 2px;
-  background: #2F9E41;
+  background: var(--primary);
 }
 
 .if-symbol .if-dot {
   grid-column: 1;
   grid-row: 1;
   border-radius: 50%;
-  background: #CD191E;
+  background: var(--danger);
 }
 
 .if-symbol span:nth-child(2) {
@@ -311,8 +311,8 @@ const handleLogin = async () => {
   gap: 0.45rem;
   min-height: 38px;
   padding: 0.5rem 0.85rem;
-  background: rgba(18, 71, 52, 0.08);
-  border: 1px solid rgba(18, 71, 52, 0.12);
+  background: var(--primary-light);
+  border: 1px solid var(--primary-border);
   border-radius: var(--radius-md);
   color: var(--primary);
   font-size: 0.86rem;
@@ -326,7 +326,7 @@ const handleLogin = async () => {
   height: 8px;
   border-radius: 50%;
   background: var(--primary-2);
-  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 0 0 4px var(--primary-light);
   flex-shrink: 0;
   animation: access-dot-pulse 1.6s ease-in-out infinite;
 }
@@ -335,7 +335,7 @@ const handleLogin = async () => {
   content: '';
   position: absolute;
   inset: -6px;
-  border: 1px solid rgba(15, 118, 110, 0.36);
+  border: 1px solid var(--primary-border);
   border-radius: 50%;
   animation: access-sonar 1.8s ease-out infinite;
 }
@@ -344,12 +344,12 @@ const handleLogin = async () => {
   0%,
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+    box-shadow: 0 0 0 4px var(--primary-light);
   }
 
   50% {
     transform: scale(1.18);
-    box-shadow: 0 0 0 5px rgba(15, 118, 110, 0.18);
+    box-shadow: 0 0 0 5px var(--primary-border);
   }
 }
 
@@ -389,15 +389,15 @@ const handleLogin = async () => {
   gap: 0.75rem;
   align-items: flex-start;
   padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   backdrop-filter: blur(8px);
   transition: all var(--transition-fast);
 }
 
 .feature-item:hover {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--surface-glass-strong);
   transform: translateX(4px);
 }
 

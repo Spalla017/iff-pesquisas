@@ -18,28 +18,28 @@ export const loginSchema = z.object({
 });
 
 /**
- * Schema de validação para criação/edição de posts.
+ * Schema de validação para criação/edição de publicações acadêmicas.
  * Campos obrigatórios: título, resumo, área e orientador.
  * Palavras-chave: array com máximo de 5 itens.
  */
 export const createPostSchema = z.object({
   titulo: z
     .string()
-    .min(1, 'O título é obrigatório.')
-    .max(200, 'O título deve ter no máximo 200 caracteres.'),
+    .min(1, 'Informe o título da pesquisa.')
+    .max(200, 'O título da pesquisa deve ter no máximo 200 caracteres.'),
   resumo: z
     .string()
-    .min(1, 'O resumo é obrigatório.')
+    .min(1, 'Informe o resumo da pesquisa.')
     .max(500, 'O resumo deve ter no máximo 500 caracteres.'),
   area: z
     .string()
     .min(1, 'Selecione uma área de conhecimento.'),
   orientador: z
     .string()
-    .min(1, 'O nome do orientador é obrigatório.'),
+    .min(1, 'Informe o nome do professor orientador.'),
   palavrasChave: z
     .array(z.string())
-    .max(5, 'Máximo de 5 palavras-chave permitidas.')
+    .max(5, 'Informe no máximo 5 palavras-chave.')
     .default([]),
 });
 
@@ -78,29 +78,43 @@ export type RecoverPasswordInput = z.infer<typeof recoverPasswordSchema>;
 export const createColaboracaoSchema = z.object({
   titulo: z
     .string()
-    .min(1, 'O título é obrigatório.')
-    .max(150, 'O título deve ter no máximo 150 caracteres.'),
+    .min(1, 'Informe o título da solicitação de colaboração.')
+    .max(150, 'O título da solicitação deve ter no máximo 150 caracteres.'),
   descricao: z
     .string()
-    .min(20, 'A descrição deve ter pelo menos 20 caracteres.')
+    .min(20, 'Descreva o projeto com pelo menos 20 caracteres.')
     .max(1000, 'A descrição deve ter no máximo 1000 caracteres.'),
   cursosDesejados: z
     .array(z.string())
-    .min(1, 'Selecione ao menos um curso.'),
+    .min(1, 'Selecione ao menos um curso para receber colaboração.'),
   orientador: z
     .string()
-    .min(1, 'O nome do orientador é obrigatório.'),
+    .min(1, 'Informe o nome do professor orientador.'),
   area: z
     .string()
-    .min(1, 'Selecione uma área de conhecimento.'),
+    .min(1, 'Selecione a área de conhecimento da solicitação.'),
   urgencia: z
     .enum(['baixa', 'media', 'alta'], {
-      errorMap: () => ({ message: 'Selecione o nível de urgência.' }),
+      message: 'Selecione a urgência da solicitação.',
     }),
   competenciasNecessarias: z
     .array(z.string())
-    .max(8, 'Máximo de 8 competências.')
+    .max(8, 'Informe no máximo 8 competências necessárias.')
     .default([]),
 });
 
 export type CreateColaboracaoInput = z.infer<typeof createColaboracaoSchema>;
+
+/**
+ * Schema de validação para mensagens do chat de colaboração.
+ * Conteúdo obrigatório com limite de 2000 caracteres.
+ */
+export const chatMessageSchema = z.object({
+  conteudo: z
+    .string()
+    .min(1, 'A mensagem não pode estar vazia.')
+    .max(2000, 'A mensagem deve ter no máximo 2000 caracteres.'),
+});
+
+export type ChatMessageInput = z.infer<typeof chatMessageSchema>;
+

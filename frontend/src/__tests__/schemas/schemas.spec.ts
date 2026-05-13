@@ -29,7 +29,7 @@ describe('schemas - createPostSchema', () => {
       orientador: 'Prof. Teste',
     });
     expect(resultado.success).toBe(false);
-    expect(extrairErroZod(resultado)).toBe('O título é obrigatório.');
+    expect(extrairErroZod(resultado)).toBe('Informe o título da pesquisa.');
   });
 
   it('rejeita titulo com mais de 200 caracteres', () => {
@@ -40,7 +40,7 @@ describe('schemas - createPostSchema', () => {
       orientador: 'Prof. Teste',
     });
     expect(resultado.success).toBe(false);
-    expect(extrairErroZod(resultado)).toBe('O título deve ter no máximo 200 caracteres.');
+    expect(extrairErroZod(resultado)).toBe('O título da pesquisa deve ter no máximo 200 caracteres.');
   });
 
   it('rejeita resumo com mais de 500 caracteres', () => {
@@ -75,7 +75,7 @@ describe('schemas - createPostSchema', () => {
       palavrasChave: ['a', 'b', 'c', 'd', 'e', 'f'],
     });
     expect(resultado.success).toBe(false);
-    expect(extrairErroZod(resultado)).toBe('Máximo de 5 palavras-chave permitidas.');
+    expect(extrairErroZod(resultado)).toBe('Informe no máximo 5 palavras-chave.');
   });
 });
 

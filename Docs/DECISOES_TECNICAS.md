@@ -10,7 +10,7 @@ Este documento registra as decisões arquiteturais e tecnológicas tomadas duran
 
 **Justificativa:**
 - O recorte do TCC é focado exclusivamente no front-end, permitindo desenvolvimento e validação independentes do back-end.
-- A camada de integração está **100% preparada** para API real:
+- A camada de integração está preparada para API real:
   - `services/api.ts` — instância Axios com `baseURL` configurável via variáveis de ambiente (`VITE_API_BASE_URL`).
   - Interceptors de request (injeção automática de token Bearer) e response (redirecionamento em 401).
   - Variável `VITE_USE_API_AUTH` permite alternar entre login mock e login real sem modificar código.
@@ -117,4 +117,38 @@ Este documento registra as decisões arquiteturais e tecnológicas tomadas duran
 - Scripts: `e2e`, `e2e:headed`, `e2e:report`.
 - Specs em `frontend/e2e/` cobrem fluxos publicos, autenticados e gravacao do video `Docs/evidencias/13_demo_fluxo.webm`.
 
-**Verificacao:** `npm run e2e` aprovado com 8 testes em Chromium e video gerado em `Docs/evidencias/13_demo_fluxo.webm`.
+**Verificacao:** `npm run e2e` aprovado com a suite E2E em Chromium e video gerado em `Docs/evidencias/13_demo_fluxo.webm`.
+
+---
+
+## 9. Chat de Grupo por Colaboração
+
+**Decisão:** O módulo de comunicação interna adota o modelo de "chat único por colaboração" ao invés de mensagens diretas avulsas entre usuários.
+
+**Justificativa:**
+- Ao atrelar a conversa à solicitação de colaboração (`colaboracaoId`), evitamos a fragmentação da comunicação sobre o mesmo projeto.
+- Quando múltiplos alunos demonstram interesse, todos são adicionados ao mesmo grupo, estimulando a colaboração coletiva e interdisciplinar.
+- O modelo facilita o controle de acesso: apenas o autor e os alunos que demonstraram interesse (`ativo: true`) podem visualizar e enviar mensagens.
+
+**Implementação:**
+- O store `chat.store.ts` mantém listas separadas para conversas, participantes e mensagens.
+- A função `garantirConversaDaColaboracao` atua de forma idempotente: se o chat já existe para a colaboração, retorna o existente, prevenindo duplicações.
+- As integrações entre lojas (`chat` e `colaboracao`) são orquestradas pelo composable `useColaboracaoChat.ts` para evitar dependências circulares.
+- Mensagens de sistema automáticas indicam quando o chat foi criado ou quando novos membros demonstram/removem interesse.
+
+---
+
+## 10. Adequacao Nielsen com Ressalvas
+
+**Decisao:** A etapa de adequacao as Heuristicas de Nielsen foi finalizada como **Aprovado com ressalvas**, nao como conformidade absoluta.
+
+**Justificativa:**
+- Os fluxos principais possuem feedbacks, validacoes, estados de carregamento, filtros ativos, documentacao e testes.
+- Ainda existem melhorias futuras, como padronizacao de modais, adaptador de erros da API real, refinamento de estados vazios e revisao de nomenclatura tecnica herdada.
+- A classificacao com ressalvas e mais adequada para uso academico, pois diferencia evidencias implementadas de limitacoes reconhecidas.
+
+**Documentos relacionados:**
+- `Docs/HEURISTICAS_NIELSEN.md`
+- `Docs/BACKLOG_USABILIDADE_NIELSEN.md`
+- `Docs/GUIA_USUARIO.md`
+- `Docs/evidencias/README.md`

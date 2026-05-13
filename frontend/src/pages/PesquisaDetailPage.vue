@@ -231,10 +231,10 @@ const compartilharPesquisa = async () => {
 
 /* Hero */
 .detail-hero {
-  background: linear-gradient(135deg, rgba(28, 47, 99, 0.08) 0%, rgba(201, 162, 39, 0.06) 100%);
+  background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-light) 100%);
   border-radius: var(--radius-xl);
   padding: 2.5rem;
-  border: 1px solid rgba(28, 47, 99, 0.10);
+  border: 1px solid var(--primary-border);
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
@@ -248,7 +248,7 @@ const compartilharPesquisa = async () => {
 }
 
 .pill-area {
-  background: rgba(28, 47, 99, 0.10);
+  background: var(--primary-light);
   color: var(--primary);
 }
 
@@ -274,7 +274,7 @@ const compartilharPesquisa = async () => {
   height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
+  color: var(--on-primary);
   display: flex;
   align-items: center;
   justify-content: center;

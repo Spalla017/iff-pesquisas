@@ -10,6 +10,7 @@
       :disabled="!isLogado || processando"
       :title="tooltipTexto"
       @click="toggleInteresse"
+      :id="`btn-interesse-${props.colaboracaoId}`"
     >
       <transition name="icon-swap" mode="out-in">
         <span v-if="processando" key="loading" class="interesse-btn__spinner" />
@@ -18,6 +19,19 @@
       </transition>
       <span class="interesse-btn__text">{{ textoBtn }}</span>
     </button>
+
+    <!-- Link para abrir o chat após registrar interesse -->
+    <router-link
+      v-if="jaInteressado && isLogado"
+      :to="`/mensagens?colab=${props.colaboracaoId}`"
+      class="interesse-btn__chat-link"
+      :id="`link-chat-${props.colaboracaoId}`"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      Abrir conversa
+    </router-link>
 
     <p v-if="!isLogado && !isAutor" class="interesse-btn__hint">
       <router-link to="/login">Faça login</router-link> para demonstrar interesse
@@ -29,7 +43,7 @@
 import { ref, computed } from 'vue';
 import { useColaboracaoStore } from '@/stores/colaboracao.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useToastStore } from '@/stores/toast.store';
+import { useColaboracaoChat } from '@/composables/useColaboracaoChat';
 
 const props = defineProps<{
   colaboracaoId: string;
@@ -37,7 +51,7 @@ const props = defineProps<{
 
 const colaboracaoStore = useColaboracaoStore();
 const authStore = useAuthStore();
-const toastStore = useToastStore();
+const { demonstrarInteresseComChat, removerInteresseComChat } = useColaboracaoChat();
 
 const processando = ref(false);
 
@@ -64,17 +78,9 @@ const toggleInteresse = async () => {
 
   try {
     if (jaInteressado.value) {
-      const ok = await colaboracaoStore.removerInteresse(props.colaboracaoId);
-      if (ok) {
-        toastStore.notificar('Interesse removido.', 'info');
-      }
+      await removerInteresseComChat(props.colaboracaoId);
     } else {
-      const ok = await colaboracaoStore.demonstrarInteresse(props.colaboracaoId);
-      if (ok) {
-        toastStore.notificar('Interesse registrado com sucesso! 🎉', 'success');
-      } else {
-        toastStore.notificar('Não foi possível registrar o interesse.', 'error');
-      }
+      await demonstrarInteresseComChat(props.colaboracaoId);
     }
   } finally {
     processando.value = false;
@@ -101,14 +107,14 @@ const toggleInteresse = async () => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  font-family: var(--sans);
+  font-family: var(--font-body);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .interesse-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(170, 59, 255, 0.25);
+  box-shadow: 0 4px 16px var(--accent-shadow);
 }
 
 .interesse-btn--ativo {
@@ -118,10 +124,10 @@ const toggleInteresse = async () => {
 }
 
 .interesse-btn--ativo:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: #ef4444;
-  color: #ef4444;
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+  background: var(--danger-light);
+  border-color: var(--danger);
+  color: var(--danger);
+  box-shadow: 0 4px 16px var(--danger-shadow);
 }
 
 .interesse-btn--disabled {
@@ -145,15 +151,33 @@ const toggleInteresse = async () => {
 .interesse-btn__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  border: 2px solid var(--border-strong);
+  border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
 
 .interesse-btn--ativo .interesse-btn__spinner {
-  border-color: rgba(170, 59, 255, 0.2);
+  border-color: var(--accent-border);
   border-top-color: var(--accent);
+}
+
+.interesse-btn__chat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 0.35rem 0.7rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.interesse-btn__chat-link:hover {
+  background: var(--primary-light);
+  text-decoration: none;
 }
 
 .interesse-btn__hint {

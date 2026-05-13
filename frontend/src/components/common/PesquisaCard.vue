@@ -82,7 +82,7 @@ const temPdfDisponivel = (pdfUrl?: string) => Boolean(pdfUrl && pdfUrl !== '#');
 .pesquisa-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
-  border-color: rgba(28, 47, 99, 0.18);
+  border-color: var(--primary-border);
 }
 
 .card-media {
@@ -113,7 +113,7 @@ const temPdfDisponivel = (pdfUrl?: string) => Boolean(pdfUrl && pdfUrl !== '#');
 }
 
 .pill-area {
-  background: rgba(28, 47, 99, 0.10);
+  background: var(--primary-light);
   color: var(--primary);
 }
 
@@ -187,7 +187,7 @@ const temPdfDisponivel = (pdfUrl?: string) => Boolean(pdfUrl && pdfUrl !== '#');
   height: 32px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--primary-2));
-  color: #fff;
+  color: var(--on-primary);
   display: flex;
   align-items: center;
   justify-content: center;
